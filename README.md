@@ -1,6 +1,12 @@
-# 文件结构说明
+# Jieba Dict Builder
 
-input - 存放所有的语料文本
+### Installation
+
+### Usage
+
+### Description
+
+input - 存放所有的csv格式语料文本
 
 output - 存放所有语料对应的前缀树字典
 
