@@ -1,0 +1,6 @@
+BLACKLIST:
+  - ['的','是','我','了']
+
+WORD_LENGTH:
+  - min_len: 2
+  - max_len: 4
