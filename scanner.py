@@ -1,0 +1,1 @@
+# scan a single text file to generate trie tree
