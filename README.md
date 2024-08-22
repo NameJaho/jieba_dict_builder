@@ -12,7 +12,7 @@ jieba内置字典有三十多万词, 语料来源于1998年人民日报, 数据�
 ### 成词规则
 仅考虑2-4字的中文组合,不考虑英文和数字
 
-可以在config/config.yaml中修改
+可以在config/config.yaml中修改成词长度
 
 ## Installation
 
@@ -28,4 +28,8 @@ data - 存放聚合后的前缀树和最终生成的字典
 
 config - 存放配置文件config.yaml
 
-scanner - 扫描单个文本文件生成前缀树
+tree_converter.py - 扫描input中单个文本文件生成前缀树保存到output/
+
+tree_merger.py - 合并所有的前缀树保存到data/
+
+dict_builder.py - 通过合并的前缀树生成最终字典
