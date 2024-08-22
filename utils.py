@@ -1,5 +1,6 @@
 import unicodedata
 import re
+import yaml
 
 
 def is_chinese(char):
@@ -33,6 +34,13 @@ def split_into_phrases(text):
         phrases.append(current_phrase)
 
     return phrases
+
+
+def load_config(file_path):
+    # 加载 YAML 配置
+    with open(file_path, 'r', encoding='utf-8') as file:
+        config = yaml.safe_load(file)
+    return config
 
 
 if __name__ == '__main__':
