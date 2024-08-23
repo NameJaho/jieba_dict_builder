@@ -16,7 +16,7 @@ class Trie:
     @staticmethod
     def is_word_in_sub_words(sub_words, target_word):
         for item in sub_words:
-            if target_word in item['word']:
+            if target_word == item['word']:
                 return True
         return False
 
@@ -35,18 +35,19 @@ class Trie:
         if first_char not in self.trie_dict:
             self.trie_dict[first_char] = {}
 
+        # 获取当前单词的首字对应的字典
         node = self.trie_dict[first_char]
 
+        # 如果该字典没有 'sub_words' 列表则初始化
         if not node.get('sub_words'):
             node['sub_words'] = []
         sub_words = node['sub_words']
 
+        # 如果当前单词没有在sub_words中出现则初始化字典
         if not self.is_word_in_sub_words(sub_words, word):
             sub_word = {'word': word, 'word_freq': 0, 'doc_freq': 0}
             sub_words.append(sub_word)
 
-        print(word)
-        print(self.trie_dict)
         sub_word = self.find_matching_word(sub_words, word)
 
         sub_word['word_freq'] += 1

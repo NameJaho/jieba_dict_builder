@@ -7,7 +7,7 @@ import os
 import utils
 from trie import Trie
 
-# pandarallel.initialize(progress_bar=True)
+pandarallel.initialize(progress_bar=True)
 
 INPUT_FOLDER = 'input'
 OUTPUT_FOLDER = 'output'
@@ -48,15 +48,13 @@ class TreeConverter:
 
                     # 检查是否存在 'content' 列
                     if 'content' in df.columns:
-                        df['trie_tree'] = df.apply(lambda x: self.convert_file(x['content']), axis=1)
+                        df['trie_tree'] = df.parallel_apply(lambda x: self.convert_file(x['content']), axis=1)
                         print('Saving: ', filename)
                         output_file = os.path.join(OUTPUT_FOLDER, f'{filename}.json')
                         df['trie_tree'].to_json(output_file, orient='records', force_ascii=False, indent=4)
                     else:
                         print(f"Warning: {filename} missing 'content' column")
                 except Exception as e:
-                    import traceback
-                    print(traceback.format_exc())
                     print(f"Processing {filename} error: {str(e)}")
 
 
