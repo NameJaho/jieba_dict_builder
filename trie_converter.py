@@ -34,9 +34,9 @@ class TreeConverter:
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=4)
 
-    def convert_all(self):
+    def convert_all(self, merged_all=True):
         directory = INPUT_FOLDER
-
+        trie_list = []
         # 遍历目录中的所有文件
         for filename in os.listdir(directory):
             if filename.endswith('.csv'):
@@ -50,12 +50,20 @@ class TreeConverter:
                     if 'content' in df.columns:
                         df['trie_tree'] = df.parallel_apply(lambda x: self.convert_file(x['content']), axis=1)
                         print('Saving: ', filename)
-                        output_file = os.path.join(OUTPUT_FOLDER, f'{filename}.json')
-                        df['trie_tree'].to_json(output_file, orient='records', force_ascii=False, indent=4)
+                        trie_tree = df['trie_tree'].tolist()
+                        trie_list.extend(trie_tree)
+                        if not merged_all:
+                            merged = self.trie.merge_trie(trie_tree)
+                            self.save_to_json(merged, filename)
                     else:
                         print(f"Warning: {filename} missing 'content' column")
                 except Exception as e:
                     print(f"Processing {filename} error: {str(e)}")
+
+        if merged_all:
+            # 合并所有的trie树
+            merged = self.trie.merge_trie(trie_list)
+            self.save_to_json(merged, 'all')
 
 
 if __name__ == '__main__':

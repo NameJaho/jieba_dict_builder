@@ -33,28 +33,20 @@ class Trie:
 
         first_char = word[0]
         if first_char not in self.trie_dict:
-            self.trie_dict[first_char] = {}
+            self.trie_dict[first_char] = []
 
         # 获取当前单词的首字对应的字典
         node = self.trie_dict[first_char]
 
-        # 如果该字典没有 'sub_words' 列表则初始化
-        if not node.get('sub_words'):
-            node['sub_words'] = []
-        sub_words = node['sub_words']
-
         # 如果当前单词没有在sub_words中出现则初始化字典
-        if not self.is_word_in_sub_words(sub_words, word):
+        if not self.is_word_in_sub_words(node, word):
             sub_word = {'word': word, 'word_freq': 0, 'doc_freq': 1}
-            sub_words.append(sub_word)
+            node.append(sub_word)
 
-        sub_word = self.find_matching_word(sub_words, word)
+        sub_word = self.find_matching_word(node, word)
 
         sub_word['word_freq'] += 1
 
-        # # 文频 doc_freq 每贴只计算一次
-        # if sub_word['doc_freq'] == 0:
-        #     sub_word['doc_freq'] = 1
 
         self.total_words += 1
 
@@ -88,13 +80,31 @@ class Trie:
         trie.trie_dict = trie_dict
         return trie
 
-    def merge_trie(self, other_trie):
-        for first_char, sub_trie in other_trie.trie_dict.items():
-            if first_char not in self.trie_dict:
-                self.trie_dict[first_char] = {}
-            for word, count in sub_trie.items():
-                if word not in self.trie_dict[first_char]:
-                    self.trie_dict[first_char][word] = 0
-                self.trie_dict[first_char][word] += count
+    @staticmethod
+    def merge_trie(datasets):
+        # 创建一个新的字典来存储更新后的词频
+        updated_data = {}
 
-        self.total_words += other_trie.total_words
+        # 遍历数据中的每个词汇和对应的词频
+        for data in datasets:
+            for key, words in data.items():
+                for word_info in words:
+                    word = word_info['word']
+                    freq = word_info['word_freq']
+                    doc_freq = word_info['doc_freq']
+
+                    # 检查词汇是否已经在更新的字典中
+                    if word in updated_data:
+                        updated_data[word]['word_freq'] += freq  # 累加词频
+                        updated_data[word]['doc_freq'] += doc_freq
+                    else:
+                        updated_data[word] = {'word_freq': freq, 'doc_freq': doc_freq}
+        return dict(sorted(updated_data.items(), key=lambda item: item[1]['word_freq'], reverse=True))
+
+
+if __name__ == '__main__':
+    with open('output/sample3.csv.json', 'r', encoding='utf8') as f:
+        data = json.load(f)
+
+    trie = Trie([''], 2, 4)
+    print(trie.merge_trie(data))
