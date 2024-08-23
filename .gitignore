@@ -17,3 +17,5 @@ checkpoint
 backup
 .pytest_cache
 xhs*
+data
+local_input
