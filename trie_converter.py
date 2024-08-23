@@ -1,7 +1,6 @@
 # scan a single text file to generate trie tree
 import json
 from pandarallel import pandarallel
-from collections import defaultdict
 import pandas as pd
 import os
 import utils
@@ -34,7 +33,7 @@ class TreeConverter:
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=4)
 
-    def convert_all(self, merged_all=True):
+    def convert_all(self, merged_all=False):
         directory = INPUT_FOLDER
         trie_list = []
         # 遍历目录中的所有文件
@@ -54,10 +53,13 @@ class TreeConverter:
                         trie_list.extend(trie_tree)
                         if not merged_all:
                             merged = self.trie.merge_trie(trie_tree)
-                            self.save_to_json(merged, filename)
+                            revised = self.trie.revise(merged)
+                            self.save_to_json(revised, filename)
                     else:
                         print(f"Warning: {filename} missing 'content' column")
                 except Exception as e:
+                    # import traceback
+                    # print(traceback.format_exc())
                     print(f"Processing {filename} error: {str(e)}")
 
         if merged_all:

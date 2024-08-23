@@ -3,4 +3,4 @@ BLACKLIST:
 
 WORD_LENGTH:
   min_len: 2
-  max_len: 4
+  max_len: 5

@@ -4,7 +4,7 @@ import json
 
 
 class Trie:
-    def __init__(self, blacklist, word_length_min=2, word_length_max=4):
+    def __init__(self, blacklist, word_length_min=2, word_length_max=5):
         self.trie_dict = None
         self.word_length_min = word_length_min
         self.word_length_max = word_length_max
@@ -47,7 +47,6 @@ class Trie:
 
         sub_word['word_freq'] += 1
 
-
         self.total_words += 1
 
     def extract_words(self, content):
@@ -64,9 +63,60 @@ class Trie:
 
         return self.trie_dict
 
+    # 扫描trie_dict, 去除不合理的成词
+    @staticmethod
+    def filter_words(trie_dict, word_length, min_word_freq):
+        return {word: info for word, info in trie_dict.items()
+                if len(word) == word_length and info["word_freq"] >= min_word_freq}
+
+    def remove_inferior_words(self, trie_dict, shorter_words, longer_words):
+        words_to_remove = set()
+
+        for shorter_word, shorter_info in shorter_words.items():
+            for longer_word, longer_info in longer_words.items():
+                if shorter_word in longer_word and shorter_info["word_freq"] <= longer_info["word_freq"]:
+                    words_to_remove.add(shorter_word)
+                    break
+
+            # 检查是否存在一组更长的词的 word_freq 之和等于当前词的 word_freq
+            self._check_sum_of_longer_words(shorter_word, shorter_info, longer_words, words_to_remove)
+
+        for word in words_to_remove:
+            if word in trie_dict:
+                del trie_dict[word]
+
+        return trie_dict
+
+    @staticmethod
+    def _check_sum_of_longer_words(shorter_word, shorter_info, longer_words, words_to_remove):
+        def _find_combinations(target, current_sum, start, path):
+            if current_sum == target:
+                return True
+            for i in range(start, len(longer_words_list)):
+                if shorter_word not in longer_words_list[i][0]:
+                    continue
+                if current_sum + longer_words_list[i][1]["word_freq"] > target:
+                    continue
+                if _find_combinations(target, current_sum + longer_words_list[i][1]["word_freq"], i + 1,
+                                      path + [longer_words_list[i][0]]):
+                    return True
+            return False
+
+        longer_words_list = [(word, info) for word, info in longer_words.items() if shorter_word in word]
+        if _find_combinations(shorter_info["word_freq"], 0, 0, []):
+            words_to_remove.add(shorter_word)
+
+    def revise(self, trie_dict, min_word_length=2, max_word_length=5, revise_threshold=10):
+        for word_length in range(min_word_length, max_word_length):
+            shorter_words = self.filter_words(trie_dict, word_length, revise_threshold)
+            longer_words = self.filter_words(trie_dict, word_length + 1, revise_threshold)
+            trie_dict = self.remove_inferior_words(trie_dict, shorter_words, longer_words)
+
+        return trie_dict
+
     def load_from_file(self, file_path):
-        with open(file_path, 'r', encoding='utf-8') as f:
-            trie_dict_list = json.load(f)
+        with open(file_path, 'r', encoding='utf-8') as my_file:
+            trie_dict_list = json.load(my_file)
             trie_dict = {}
             for item in trie_dict_list:
                 for first_char, sub_trie in item.items():
