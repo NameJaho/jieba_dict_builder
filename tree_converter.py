@@ -64,11 +64,10 @@ class TreeConverter:
 
                     # 检查是否存在 'content' 列
                     if 'content' in df.columns:
-                        content = df['content'].values[0]
-                        print('Converting: ', filename)
-                        trie_tree = self.extract_words(content)
+                        df['trie_tree'] = df.parallel_apply(lambda x: self.extract_words(x['content']), axis=1)
                         print('Saving: ', filename)
-                        self.save_to_json(trie_tree, filename)
+                        output_file = os.path.join(OUTPUT_FOLDER, f'{filename}.json')
+                        df['trie_tree'].to_json(output_file, orient='records', force_ascii=False, indent=4)
                     else:
                         print(f"Warning: {filename} missing 'content' column")
                 except Exception as e:
