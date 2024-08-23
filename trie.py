@@ -52,6 +52,7 @@ class Trie:
 
         sub_word['word_freq'] += 1
 
+        # 文频 doc_freq 每贴只计算一次
         if sub_word['doc_freq'] == 0:
             sub_word['doc_freq'] = 1
 
