@@ -18,7 +18,19 @@ jieba内置字典有三十多万词, 语料来源于1998年人民日报, 数据�
 所有的非中文字符包括标点，英文，数字，换行符作为分割符来断句
 
 ## Installation
+1. Clone the repo
+   ```sh
+   git clone git@github.com:Jeru2023/jieba_dict_builder.git
+   ```
 
+2. Install packages
+   ```sh
+   install -r requirements.txt
+   ```
+   
+3. Prepare your own corpus
+   Put csv files in input folder, only 'content' column required.
+4. 
 ## Usage
 
 ## Description
@@ -31,8 +43,8 @@ data - 存放聚合后的前缀树和最终生成的字典
 
 config - 存放配置文件config.yaml
 
-tree_converter.py - 扫描input中单个文本文件生成前缀树保存到output/
+tree_converter.py - 扫描input中单个文本文件生成前缀树保存到output
 
-tree_merger.py - 合并所有的前缀树保存到data/
+tree_merger.py - 合并所有的前缀树保存到data
 
 dict_builder.py - 通过合并的前缀树生成最终字典
