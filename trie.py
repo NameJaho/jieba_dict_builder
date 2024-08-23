@@ -1,4 +1,6 @@
 import utils
+import os
+import json
 
 
 class Trie:
@@ -36,3 +38,33 @@ class Trie:
                             self.insert(word)
 
         return self.trie_dict
+
+    def load_from_file(self, file_path):
+        with open(file_path, 'r', encoding='utf-8') as f:
+            trie_dict_list = json.load(f)
+            trie_dict = {}
+            for item in trie_dict_list:
+                for first_char, sub_trie in item.items():
+                    if first_char not in trie_dict:
+                        trie_dict[first_char] = {}
+                    for word, count in sub_trie.items():
+                        if word not in trie_dict[first_char]:
+                            trie_dict[first_char][word] = 0
+                        trie_dict[first_char][word] += count
+        trie = Trie(self.blacklist, self.word_length_min, self.word_length_max)
+        trie.trie_dict = trie_dict
+        return trie
+
+    def merge_trie(self, other_trie):
+
+        for first_char, sub_trie in other_trie.trie_dict.items():
+            if first_char not in self.trie_dict:
+                self.trie_dict[first_char] = {}
+            for word, count in sub_trie.items():
+                if word not in self.trie_dict[first_char]:
+                    self.trie_dict[first_char][word] = 0
+                self.trie_dict[first_char][word] += count
+
+        self.total_words += other_trie.total_words
+
+
