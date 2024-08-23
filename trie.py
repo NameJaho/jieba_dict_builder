@@ -5,13 +5,13 @@ import json
 
 class Trie:
     def __init__(self, blacklist, word_length_min=2, word_length_max=4):
+        self.trie_dict = None
         self.word_length_min = word_length_min
         self.word_length_max = word_length_max
         self.blacklist = blacklist
-        self.total_words = 0    # number of scan words
-        self.total_docs = 0     # number of documents
-        self.total_chars = 0    # number of characters
-        self.trie_dict = {}
+        self.total_words = 0  # number of scan words
+        self.total_docs = 0  # number of documents
+        self.total_chars = 0  # number of characters
 
     @staticmethod
     def is_word_in_sub_words(sub_words, target_word):
@@ -45,20 +45,21 @@ class Trie:
 
         # 如果当前单词没有在sub_words中出现则初始化字典
         if not self.is_word_in_sub_words(sub_words, word):
-            sub_word = {'word': word, 'word_freq': 0, 'doc_freq': 0}
+            sub_word = {'word': word, 'word_freq': 0, 'doc_freq': 1}
             sub_words.append(sub_word)
 
         sub_word = self.find_matching_word(sub_words, word)
 
         sub_word['word_freq'] += 1
 
-        # 文频 doc_freq 每贴只计算一次
-        if sub_word['doc_freq'] == 0:
-            sub_word['doc_freq'] = 1
+        # # 文频 doc_freq 每贴只计算一次
+        # if sub_word['doc_freq'] == 0:
+        #     sub_word['doc_freq'] = 1
 
         self.total_words += 1
 
     def extract_words(self, content):
+        self.trie_dict = {}
         phrases = utils.split_into_phrases(content)
 
         for phrase in phrases:
@@ -97,4 +98,3 @@ class Trie:
                 self.trie_dict[first_char][word] += count
 
         self.total_words += other_trie.total_words
-
