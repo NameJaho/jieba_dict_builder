@@ -33,22 +33,17 @@ class Trie:
 
         first_char = word[0]
         if first_char not in self.trie_dict:
-            self.trie_dict[first_char] = {}
+            self.trie_dict[first_char] = []
 
         # 获取当前单词的首字对应的字典
         node = self.trie_dict[first_char]
 
-        # 如果该字典没有 'sub_words' 列表则初始化
-        if not node.get('sub_words'):
-            node['sub_words'] = []
-        sub_words = node['sub_words']
-
         # 如果当前单词没有在sub_words中出现则初始化字典
-        if not self.is_word_in_sub_words(sub_words, word):
+        if not self.is_word_in_sub_words(node, word):
             sub_word = {'word': word, 'word_freq': 0, 'doc_freq': 1}
-            sub_words.append(sub_word)
+            node.append(sub_word)
 
-        sub_word = self.find_matching_word(sub_words, word)
+        sub_word = self.find_matching_word(node, word)
 
         sub_word['word_freq'] += 1
 
