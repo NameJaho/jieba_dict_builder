@@ -29,8 +29,9 @@ jieba内置字典有三十多万词, 语料来源于1998年人民日报, 数据�
    ```
    
 3. Prepare your own corpus
-   Put csv files in input folder, only 'content' column required.
-4. 
+
+Put csv files in input folder, only 'content' column required.
+
 ## Usage
 
 ## Description
