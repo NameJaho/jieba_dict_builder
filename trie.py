@@ -7,9 +7,25 @@ class Trie:
     def __init__(self, blacklist, word_length_min=2, word_length_max=4):
         self.word_length_min = word_length_min
         self.word_length_max = word_length_max
-        self.blacklist = blacklist  # 假设您有一个黑名单字符集
-        self.total_words = 0
+        self.blacklist = blacklist
+        self.total_words = 0    # number of scan words
+        self.total_docs = 0     # number of documents
+        self.total_chars = 0    # number of characters
         self.trie_dict = {}
+
+    @staticmethod
+    def is_word_in_sub_words(sub_words, target_word):
+        for item in sub_words:
+            if target_word in item['word']:
+                return True
+        return False
+
+    @staticmethod
+    def find_matching_word(sub_words, target_word):
+        for item in sub_words:
+            if item['word'] == target_word:
+                return item
+        return None
 
     def insert(self, word):
         if len(word) < self.word_length_min or len(word) > self.word_length_max:
@@ -19,10 +35,24 @@ class Trie:
         if first_char not in self.trie_dict:
             self.trie_dict[first_char] = {}
 
-        current_dict = self.trie_dict[first_char]
-        if word not in current_dict:
-            current_dict[word] = 0
-        current_dict[word] += 1
+        node = self.trie_dict[first_char]
+
+        if not node.get('sub_words'):
+            node['sub_words'] = []
+        sub_words = node['sub_words']
+
+        if not self.is_word_in_sub_words(sub_words, word):
+            sub_word = {'word': word, 'word_freq': 0, 'doc_freq': 0}
+            sub_words.append(sub_word)
+
+        print(word)
+        print(self.trie_dict)
+        sub_word = self.find_matching_word(sub_words, word)
+
+        sub_word['word_freq'] += 1
+
+        if sub_word['doc_freq'] == 0:
+            sub_word['doc_freq'] = 1
 
         self.total_words += 1
 
@@ -56,7 +86,6 @@ class Trie:
         return trie
 
     def merge_trie(self, other_trie):
-
         for first_char, sub_trie in other_trie.trie_dict.items():
             if first_char not in self.trie_dict:
                 self.trie_dict[first_char] = {}
