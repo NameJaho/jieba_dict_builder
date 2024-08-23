@@ -5,6 +5,7 @@ from collections import defaultdict
 import pandas as pd
 import os
 import utils
+from trie import Trie
 
 pandarallel.initialize(progress_bar=True)
 
@@ -21,28 +22,11 @@ class TreeConverter:
         self.blacklist = config['BLACKLIST']
         self.word_length_min = config['WORD_LENGTH']['min_len']
         self.word_length_max = config['WORD_LENGTH']['max_len']
+        self.trie = Trie(self.blacklist, self.word_length_min, self.word_length_max)
 
-    def extract_words(self, content):
-        # 使用正则表达式切割字符串
-        # 初始化结果字典
-        result = defaultdict(lambda: defaultdict(int))
-
-        # 需要排除的字符
-        exclude_chars = self.blacklist
-
-        phrases = utils.split_into_phrases(content)
-        # 遍历每个段落，提取词语并统计频率
-        for phrase in phrases:
-            for i in range(len(phrase)):
-                for j in range(self.word_length_min, self.word_length_max):
-                    if i + j <= len(phrase):
-                        word = phrase[i:i + j]
-                        first_char = word[0]
-                        if first_char not in exclude_chars:
-                            result[first_char][word] += 1
-
-        # 将结果转换为普通字典
-        return {k: dict(v) for k, v in result.items()}
+    def convert_file(self, file_content):
+        trie_dict = self.trie.extract_words(file_content)
+        return trie_dict
 
     @staticmethod
     def save_to_json(result, filename):
@@ -64,7 +48,7 @@ class TreeConverter:
 
                     # 检查是否存在 'content' 列
                     if 'content' in df.columns:
-                        df['trie_tree'] = df.parallel_apply(lambda x: self.extract_words(x['content']), axis=1)
+                        df['trie_tree'] = df.parallel_apply(lambda x: self.convert_file(x['content']), axis=1)
                         print('Saving: ', filename)
                         output_file = os.path.join(OUTPUT_FOLDER, f'{filename}.json')
                         df['trie_tree'].to_json(output_file, orient='records', force_ascii=False, indent=4)
