@@ -98,4 +98,3 @@ class Trie:
 
         self.total_words += other_trie.total_words
 
-
