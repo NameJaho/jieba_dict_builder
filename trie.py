@@ -89,27 +89,24 @@ class Trie:
 
     @staticmethod
     def _check_sum_of_longer_words(shorter_word, shorter_info, longer_words, words_to_remove):
-        def _find_combinations(target, current_sum, start, path):
-            if current_sum == target:
-                return True
-            for i in range(start, len(longer_words_list)):
-                if shorter_word not in longer_words_list[i][0]:
-                    continue
-                if current_sum + longer_words_list[i][1]["word_freq"] > target:
-                    continue
-                if _find_combinations(target, current_sum + longer_words_list[i][1]["word_freq"], i + 1,
-                                      path + [longer_words_list[i][0]]):
-                    return True
-            return False
+        def _find_combinations(target, _longer_words_list):
+            dp = [False] * (target + 1)
+            dp[0] = True
+            for word, info in _longer_words_list:
+                freq = info["word_freq"]
+                for j in range(target, freq - 1, -1):
+                    if dp[j - freq]:
+                        dp[j] = True
+            return dp[target]
 
         longer_words_list = [(word, info) for word, info in longer_words.items() if shorter_word in word]
-        if _find_combinations(shorter_info["word_freq"], 0, 0, []):
+        if _find_combinations(shorter_info["word_freq"], longer_words_list):
             words_to_remove.add(shorter_word)
 
     def revise(self, trie_dict, min_word_length=2, max_word_length=5, revise_threshold=10):
         for word_length in range(min_word_length, max_word_length):
             shorter_words = self.filter_words(trie_dict, word_length, revise_threshold)
-            longer_words = self.filter_words(trie_dict, word_length + 1, revise_threshold)
+            longer_words = self.filter_words(trie_dict, word_length + 1, 1)
             trie_dict = self.remove_inferior_words(trie_dict, shorter_words, longer_words)
 
         return trie_dict
