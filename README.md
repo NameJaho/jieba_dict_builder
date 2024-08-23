@@ -44,8 +44,10 @@ data - 存放聚合后的前缀树和最终生成的字典
 
 config - 存放配置文件config.yaml
 
-tree_converter.py - 扫描input中单个文本文件生成前缀树保存到output
+trie_converter.py - 扫描input中单个文本文件生成前缀树保存到output
 
-tree_merger.py - 合并所有的前缀树保存到data
+trie_merger.py - 合并所有的前缀树保存到data
+
+trie.py - 前缀树的节点添加，合并等操作
 
 dict_builder.py - 通过合并的前缀树生成最终字典
