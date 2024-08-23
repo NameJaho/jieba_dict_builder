@@ -16,3 +16,4 @@ config.ini
 checkpoint
 backup
 .pytest_cache
+xhs*
