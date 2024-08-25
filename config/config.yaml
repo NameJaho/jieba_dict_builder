@@ -3,4 +3,8 @@ BLACKLIST:
 
 WORD_LENGTH:
   min_len: 2
-  max_len: 5
+  max_len: 4
+
+VALIDATION:
+  doc_freq_threshold: 3
+  term_freq_threshold: 6

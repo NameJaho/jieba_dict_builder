@@ -1,5 +1,5 @@
 import unicodedata
-import re
+import time
 import yaml
 
 
@@ -41,6 +41,16 @@ def load_config(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         config = yaml.safe_load(file)
     return config
+
+
+def cost_time(func):
+    def fun(*args, **kwargs):
+        t = time.perf_counter()
+        result = func(*args, **kwargs)
+        print(f'func {func.__name__} cost time:{time.perf_counter() - t:.8f} s')
+        return result
+
+    return fun
 
 
 if __name__ == '__main__':
