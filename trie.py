@@ -1,5 +1,5 @@
 import threading
-
+from utils import cost_time
 from trie_node import TrieNode
 
 
@@ -79,6 +79,14 @@ class Trie:
             print(f"{prefix}{node.char}")
         for child in node.children.values():
             self.print_trie(child, prefix + '  ', False)
+
+    @cost_time
+    def get_words_containing(self, word):
+        result = []
+        for w in self._get_all_words(self.root):
+            if word in w['word']:
+                result.append((w['word'], w['term_freq']))
+        return result
 
 
 if __name__ == '__main__':

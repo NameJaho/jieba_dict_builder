@@ -1,10 +1,10 @@
 BLACKLIST:
-  ['的','是','我','了']
+  ['的','是','我','你','了','还','会','一','个','这','那','么','有','很','不','去','也','在','就']
 
 WORD_LENGTH:
   min_len: 2
-  max_len: 4
+  max_len: 5
 
 VALIDATION:
-  doc_freq_threshold: 3
-  term_freq_threshold: 6
+  doc_freq_threshold: 15
+  term_freq_threshold: 50

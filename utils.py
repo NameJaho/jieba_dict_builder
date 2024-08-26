@@ -14,7 +14,7 @@ def is_chinese(char):
     return 'CJK UNIFIED IDEOGRAPH' in name
 
 
-def split_into_phrases(text):
+def split_into_phrases(text, blacklist):
     """
     将文本切割成短语，以非中文字符为分隔符
     """
@@ -22,10 +22,10 @@ def split_into_phrases(text):
     current_phrase = ""
 
     for char in text:
-        if is_chinese(char):
+        if is_chinese(char) and char not in blacklist:
             current_phrase += char
         else:
-            if current_phrase:
+            if len(current_phrase) > 1:
                 phrases.append(current_phrase)
                 current_phrase = ""
 
@@ -55,4 +55,4 @@ def cost_time(func):
 
 if __name__ == '__main__':
     s = '我是123中国人@汉子-三个人,还有%#和band也是。'
-    print(split_into_phrases(s))
+    print(split_into_phrases(s, ['的','是','我','了']))

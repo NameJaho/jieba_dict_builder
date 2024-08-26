@@ -80,6 +80,7 @@ class CorpusProcessor:
 
         return file_trie
 
+    @cost_time
     def validate_words(self, word_info_list, trie):
         """
         判断status=0的词是否合理，如果合理则将status设为1，否则设为-1
@@ -90,37 +91,47 @@ class CorpusProcessor:
             if word_info['status'] == 0:
                 word = word_info['word']
                 entropy = self.calculate_entropy(word, trie)
-                print(word, entropy, word_info['doc_freq'], word_info['term_freq'])
+                #print(word, entropy, word_info['doc_freq'], word_info['term_freq'])
                 if entropy > 1.5:  # 假设阈值为1.5
                     word_info['status'] = 1
                 else:
                     word_info['status'] = -1
 
-    @staticmethod
-    def calculate_entropy(word, trie):
-        """
-        计算词的左右熵
-        :param word: 词
-        :param trie: 前缀树
-        :return: 词的左右熵
-        """
+    def calculate_entropy(self, word, trie):
         left_neighbors = defaultdict(int)
         right_neighbors = defaultdict(int)
-        total_term_freq = trie.get_total_term_freq()
 
-        for w, term_freq in trie.get_words_with_term_freq():
-            if word in w:
-                left_neighbors[w[:w.index(word)]] += term_freq
-                right_neighbors[w[w.index(word) + len(word):]] += term_freq
+        # 获取所有包含目标词的词及其频率
+        containing_words = trie.get_words_containing(word)
 
-        left_entropy = -sum(freq / total_term_freq * math.log(freq / total_term_freq) for freq in left_neighbors.values())
-        right_entropy = -sum(freq / total_term_freq * math.log(freq / total_term_freq) for freq in right_neighbors.values())
+        for w, term_freq in containing_words:
+            index = w.index(word)
+            if index > 0:
+                left_neighbor = w[index - 1]
+                left_neighbors[left_neighbor] += term_freq
+            if index + len(word) < len(w):
+                right_neighbor = w[index + len(word)]
+                right_neighbors[right_neighbor] += term_freq
 
+        # 计算左熵
+        left_entropy = self.calculate_single_entropy(left_neighbors)
+
+        # 计算右熵
+        right_entropy = self.calculate_single_entropy(right_neighbors)
+
+        # 返回左右熵的平均值
         return (left_entropy + right_entropy) / 2
+
+    @staticmethod
+    def calculate_single_entropy(neighbors):
+        if not neighbors:
+            return 0
+        total_freq = sum(neighbors.values())
+        return -sum((freq / total_freq) * math.log(freq / total_freq) for freq in neighbors.values())
 
 
 if __name__ == '__main__':
     corpus_processor = CorpusProcessor()
     _filename = 'sample1.csv'  # 替换为你的CSV文件名
     _trie = corpus_processor.convert_file_to_trie(_filename)
-    _trie.print_trie()
+    #_trie.print_trie()
