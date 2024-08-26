@@ -18,11 +18,13 @@ class Trie:
 
     def bulk_insert(self, words):
         words.sort(key=lambda x: x['word'])
+
         with multiprocessing.Pool() as pool:
             pool.map(self._insert_wrapper, words)
 
     def _insert_wrapper(self, word_info):
         self.insert(word_info['word'], word_info['term_freq'], word_info['doc_freq'], word_info['status'])
+
 
     def search(self, word):
         node = self.root
@@ -47,6 +49,10 @@ class Trie:
         for child in node.children.values():
             words.extend(self._get_all_words(child))
         return words
+
+    @property
+    def all_words(self):
+        return self._get_all_words(self.root)
 
     def get_total_term_freq(self):
         return self.total_term_freq
@@ -75,13 +81,9 @@ class Trie:
         for child in node.children.values():
             self.print_trie(child, prefix + '  ', False)
 
-    @cost_time
-    def get_words_containing(self, word):
-        result = []
-        for w in self._get_all_words(self.root):
-            if word in w['word']:
-                result.append((w['word'], w['term_freq']))
-        return result
+    def get_words_containing(self, word, all_words):
+
+        return [(w['word'], w['term_freq']) for w in all_words if word in w['word']]
 
 
 if __name__ == '__main__':
