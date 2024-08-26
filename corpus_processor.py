@@ -13,7 +13,7 @@ import math
 
 from pandarallel import pandarallel
 
-pandarallel.initialize(progress_bar=True,verbose=0)
+pandarallel.initialize(progress_bar=True, verbose=2)
 
 INPUT_FOLDER = 'input'
 OUTPUT_FOLDER = 'output'
@@ -75,21 +75,21 @@ class CorpusProcessor:
         jieba_word_set = self.load_dict_to_set(JIEBA_DICT, self.word_length_min, self.word_length_max)
         word_info_list = self.word_scanner.generate_word_info_list(content_list, jieba_word_set)
 
+        for word_info in word_info_list:
+            word = word_info['word']
+            term_freq = word_info['term_freq']
+            doc_freq = word_info['doc_freq']
+            status = word_info['status']
+            file_trie.insert(word, term_freq, doc_freq, status)
 
-        # for word_info in word_info_list:
-        #     word = word_info['word']
-        #     term_freq = word_info['term_freq']
-        #     doc_freq = word_info['doc_freq']
-        #     status = word_info['status']
-        #     file_trie.insert(word, term_freq, doc_freq, status)
+        #file_trie.bulk_insert(word_info_list)
+        return file_trie, word_info_list
 
-        file_trie.bulk_insert(word_info_list)
-
-        #filtered_word_info_list = self.filter_words(word_info_list)
-        #self.validate_words(filtered_word_info_list, file_trie)
-
-
-        return file_trie
+    def validate_trie(self, word_info_list, file_trie):
+        all_words = file_trie.all_words
+        filtered_word_info_list = self.filter_words(word_info_list)
+        trie = self.validate_words(filtered_word_info_list, file_trie, all_words)
+        return trie
 
     @cost_time
     def validate_words(self, word_info_list, trie, all_words):
@@ -97,24 +97,29 @@ class CorpusProcessor:
         判断status=0的词是否合理，如果合理则将status设为1，否则设为-1
         :param word_info_list: 词信息列表
         :param trie: 前缀树
+        :param all_words: trie中所有词
         """
         df = pd.DataFrame(word_info_list)
 
-        filtered_word_info_list = df[df['status'] == 0]
-        filtered_word_info_list['emtropy'] = filtered_word_info_list.parallel_apply(
-            lambda x: self.calculate_entropy(x['word'], trie, all_words), axis=1)
+        # filtered_word_info_list = df[df['status'] == 0]
+        # filtered_word_info_list['entropy'] = filtered_word_info_list.parallel_apply(
+        #     lambda x: self.calculate_entropy(x['word'], trie, all_words), axis=1)
+        #
+        # filtered_word_info_list['status'] = filtered_word_info_list['entropy'].apply(lambda x: 1 if x > 1.5 else -1)
+        # result = filtered_word_info_list[filtered_word_info_list['status'] == 1].to_dict(orient='records')
+        # print(len(result))
+        # return result
 
-        filtered_word_info_list['status'] = filtered_word_info_list['emtropy'].apply(lambda x: 1 if x > 1.5 else -1)
-        return filtered_word_info_list[filtered_word_info_list['status'] == 1].to_dict(orient='records')
-        # for word_info in word_info_list:
-        #     if word_info['status'] == 0:
-        #         word = word_info['word']
-        #         entropy = self.calculate_entropy(word, trie)
-        #         # print(word, entropy, word_info['doc_freq'], word_info['term_freq'])
-        #         if entropy > 1.5:  # 假设阈值为1.5
-        #             word_info['status'] = 1
-        #         else:
-        #             word_info['status'] = -1
+        for word_info in word_info_list:
+            if word_info['status'] == 0:
+                word = word_info['word']
+                entropy = self.calculate_entropy(word, trie, all_words)
+                if entropy > 1.5:
+                    print(word, entropy, word_info['doc_freq'], word_info['term_freq'])
+                if entropy > 1.5:  # 假设阈值为1.5
+                    word_info['status'] = 1
+                else:
+                    word_info['status'] = -1
 
     def calculate_entropy(self, word, trie, all_words):
         left_neighbors = defaultdict(int)
@@ -152,5 +157,7 @@ class CorpusProcessor:
 if __name__ == '__main__':
     corpus_processor = CorpusProcessor()
     _filename = 'sample1.csv'  # 替换为你的CSV文件名
-    _trie = corpus_processor.convert_file_to_trie(_filename)
+    _trie, word_info_list = corpus_processor.convert_file_to_trie(_filename)
+    valid_trie = corpus_processor.validate_trie(word_info_list, _trie)
     # _trie.print_trie()
+    print(valid_trie)

@@ -81,8 +81,8 @@ class Trie:
         for child in node.children.values():
             self.print_trie(child, prefix + '  ', False)
 
-    def get_words_containing(self, word, all_words):
-
+    @staticmethod
+    def get_words_containing(word, all_words):
         return [(w['word'], w['term_freq']) for w in all_words if word in w['word']]
 
 
