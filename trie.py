@@ -1,4 +1,4 @@
-import threading
+import multiprocessing
 from utils import cost_time
 from trie_node import TrieNode
 
@@ -7,7 +7,7 @@ class Trie:
     def __init__(self):
         self.root = TrieNode('')
         self.total_term_freq = 0
-        self.lock = threading.Lock()  # 使用锁来保证多线程安全
+        # self.lock = threading.Lock()  # 使用锁来保证多线程安全
 
     def insert(self, word, term_freq, doc_freq, status):
         node = self.root
@@ -17,18 +17,14 @@ class Trie:
         self.total_term_freq += term_freq
 
     def bulk_insert(self, words):
-        # 对词列表进行排序
         words.sort(key=lambda x: x['word'])
-        threads = []
-        for word_info in words:
-            thread = threading.Thread(target=self.insert,
-                                      args=(word_info['word'], word_info['term_freq'], word_info['doc_freq'],
-                                            word_info['status']))
-            threads.append(thread)
-            thread.start()
 
-        for thread in threads:
-            thread.join()
+        with multiprocessing.Pool() as pool:
+            pool.map(self._insert_wrapper, words)
+
+    def _insert_wrapper(self, word_info):
+        self.insert(word_info['word'], word_info['term_freq'], word_info['doc_freq'], word_info['status'])
+
 
     def search(self, word):
         node = self.root

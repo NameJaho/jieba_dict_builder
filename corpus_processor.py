@@ -75,17 +75,19 @@ class CorpusProcessor:
         jieba_word_set = self.load_dict_to_set(JIEBA_DICT, self.word_length_min, self.word_length_max)
         word_info_list = self.word_scanner.generate_word_info_list(content_list, jieba_word_set)
 
-        for word_info in word_info_list:
-            word = word_info['word']
-            term_freq = word_info['term_freq']
-            doc_freq = word_info['doc_freq']
-            status = word_info['status']
-            file_trie.insert(word, term_freq, doc_freq, status)
 
-        filtered_word_info_list = self.filter_words(word_info_list)
+        # for word_info in word_info_list:
+        #     word = word_info['word']
+        #     term_freq = word_info['term_freq']
+        #     doc_freq = word_info['doc_freq']
+        #     status = word_info['status']
+        #     file_trie.insert(word, term_freq, doc_freq, status)
 
-        filter_result = self.validate_words(filtered_word_info_list, file_trie, file_trie.all_words)
-        print(filter_result)
+        file_trie.bulk_insert(word_info_list)
+
+        #filtered_word_info_list = self.filter_words(word_info_list)
+        #self.validate_words(filtered_word_info_list, file_trie)
+
 
         return file_trie
 
