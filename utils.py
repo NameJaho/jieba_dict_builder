@@ -25,15 +25,16 @@ def split_into_phrases(text, blacklist):
         if is_chinese(char) and char not in blacklist:
             current_phrase += char
         else:
-            if len(current_phrase) > 1:
-                phrases.append(current_phrase)
-                current_phrase = ""
+            # if len(current_phrase) > 1:
+
+            phrases.append(current_phrase)
+            current_phrase = ""
 
     # 添加最后一个短语（如果存在）
     if current_phrase:
         phrases.append(current_phrase)
 
-    return phrases
+    return [i for i in phrases if len(i) > 0]
 
 
 def load_config(file_path):
@@ -54,5 +55,8 @@ def cost_time(func):
 
 
 if __name__ == '__main__':
-    s = '我是123中国人@汉子-三个人,还有%#和band也是。'
-    print(split_into_phrases(s, ['的','是','我','了']))
+    s = '开榴莲;15.8一斤，60块的小榴莲，最终开出来924克的肉'
+    s = '北动小公主萌兰“太子妃” ，白天有多调皮;北动小公主，萌兰“太子妃” ，熊猫白天有多调皮！'
+    print(split_into_phrases(s,
+                             ['的', '一', '了', '是', '我', '不', '在', '人', '们', '有', '来', '他', '这', '上', '着','个', '到', '啦', '呢',  '说', '就', '去',   '得', '也', '和', '那', '要', '下',                             '看',                              '时', '过', '出', '啊', '么', '起', '你', '都', '把', '好', '还',  '没', '为', '又',                              '可', '只', '以', '会', '样', '年', '想', '能', '中', '十', '从', '自', '前',                             '它', '后', '然', '走', '很', '像', '见', '两', '用', '她', '国',   '进', '成', '回',                              '什', '边', '作', '对', '而', '己', '些', '现', '候', '向', '给', '才', '与']
+                             ))

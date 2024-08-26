@@ -1,5 +1,7 @@
 import pandas as pd
+import warnings
 
+warnings.filterwarnings("ignore")
 import utils
 from word_splitter.word_cutter import WordCutter
 
@@ -71,7 +73,7 @@ class Scanner():
     def main(self):
         df = self.init_data()
         df.dropna(subset=['final_content'], inplace=True)
-        sample = df.sample(100)
+        sample = df[:100]
         sample['words'] = sample['final_content'].apply(
             lambda x: self.wc.cut(''.join(utils.split_into_phrases(x, self.blacklist))))
         sample['keywords'] = sample['words'].apply(lambda x: self.scan_data(x))
@@ -81,3 +83,4 @@ class Scanner():
 if __name__ == '__main__':
     s = Scanner()
     s.main()
+# 当东北幼崽第,次出门,反应…;东北终于终于开春,在家待,整,冬天没出过门,女儿真,太可怜,出门,动,动满眼
