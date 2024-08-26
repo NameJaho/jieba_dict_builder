@@ -15,9 +15,9 @@ class WordCutter:
 
 if __name__ == '__main__':
     sentences = [
-'老师，你的王牌回来了;       #'
+'是封校学生了;一起看电影；一起玩picopark，一起打僵尸'
     ]
     word_cutter = WordCutter()
     for sentence in sentences:
         s = utils.split_into_phrases(sentence, [])
-        print(''.join(word_cutter.cut(''.join(s))))
+        print( word_cutter.cut(''.join(s)))

@@ -82,7 +82,7 @@ class CorpusProcessor:
             status = word_info['status']
             file_trie.insert(word, term_freq, doc_freq, status)
 
-        #file_trie.bulk_insert(word_info_list)
+        # file_trie.bulk_insert(word_info_list)
         return file_trie, word_info_list
 
     def validate_trie(self, word_info_list, file_trie):
