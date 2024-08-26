@@ -15,7 +15,7 @@ class WordCutter:
 
 if __name__ == '__main__':
     sentences = [
-'因为某种原因我们得到了几天的假期 终于决定去爬山啦遇到了超级美的七彩祥云希望我的某人可以驾着七彩祥云来接我'
+'老师，你的王牌回来了;       #'
     ]
     word_cutter = WordCutter()
     for sentence in sentences:

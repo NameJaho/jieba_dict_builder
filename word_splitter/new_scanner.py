@@ -3,7 +3,7 @@ import pandas as pd
 import utils
 from word_splitter.word_cutter import WordCutter
 
-CONFIG_FILE = 'config/config.yaml'
+CONFIG_FILE = '../config/config.yaml'
 
 
 class Scanner():
@@ -13,7 +13,7 @@ class Scanner():
         self.blacklist = config['BLACKLIST']
 
     def init_data(self):
-        df = pd.read_csv('input/random_user_10w.csv')
+        df = pd.read_csv('../input/random_user_10w.csv')
         return df
 
     @staticmethod
@@ -70,5 +70,14 @@ class Scanner():
 
     def main(self):
         df = self.init_data()
-        df['words'] = df['content'].apply(lambda x: self.wc.cut(''.join(utils.split_into_phrases(x, self.blacklist))))
-        df['keywords'] = df['words'].apply(lambda x: self.scan_data(x))
+        df.dropna(subset=['final_content'], inplace=True)
+        sample = df.sample(100)
+        sample['words'] = sample['final_content'].apply(
+            lambda x: self.wc.cut(''.join(utils.split_into_phrases(x, self.blacklist))))
+        sample['keywords'] = sample['words'].apply(lambda x: self.scan_data(x))
+        sample.to_csv('../output/keywords.csv', index=False)
+
+
+if __name__ == '__main__':
+    s = Scanner()
+    s.main()
