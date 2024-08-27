@@ -1,5 +1,6 @@
 import re
 import time
+from collections import defaultdict
 
 import pandas as pd
 import warnings
@@ -193,13 +194,12 @@ if __name__ == '__main__':
     start = time.time()
     ngram_stat = NgramStatistics()
     df['ngrams_len'] = df['ngrams'].apply(len)
-    print('\nngrams_len cost time:', time.time() - start)
     filter_df = df[df['ngrams_len'] > 0]
     ngrams = filter_df.explode('ngrams')[['ngrams']].to_dict(orient='records')
     print('\nexplode cost time:', time.time() - start)
     processed_data = [item['ngrams'] for item in ngrams]
 
-    result = ngram_stat.aggregate_words(processed_data)
+    result = ngram_stat.aggregate_words(processed_data,30)
     print('\naggregate_words cost time:', time.time() - start)
     ngram_stat.save_to_csv(result)
     print('\nsave_to_csv cost time:', time.time() - start)
