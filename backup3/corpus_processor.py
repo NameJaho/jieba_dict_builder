@@ -17,7 +17,7 @@ pandarallel.initialize(progress_bar=True, verbose=2)
 
 INPUT_FOLDER = 'input'
 OUTPUT_FOLDER = 'output'
-CONFIG_FILE = 'config/config.yaml'
+CONFIG_FILE = '../config/config.yaml'
 JIEBA_DICT = 'source_dict/dict.txt'
 
 

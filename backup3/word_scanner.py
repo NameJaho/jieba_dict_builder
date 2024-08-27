@@ -4,7 +4,7 @@ import math
 from utils import cost_time
 from collections import defaultdict, Counter
 
-CONFIG_FILE = 'config/config.yaml'
+CONFIG_FILE = '../config/config.yaml'
 JIEBA_DICT = 'source_dict/dict.txt'
 
 
