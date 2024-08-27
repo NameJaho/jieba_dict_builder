@@ -1,4 +1,8 @@
+import json
 from collections import defaultdict
+
+import pandas as pd
+
 
 class NgramStatistics:
     def __init__(self):
@@ -38,15 +42,35 @@ class NgramStatistics:
         for word in aggregated:
             aggregated[word]['doc_freq'] = len(doc_freq_set[word])
 
-        # 将字符频率字典转换为列表
-        for word in aggregated:
-            aggregated[word]['left_chars'] = [{'char': char, 'freq': freq} for char, freq in aggregated[word]['left_chars'].items()]
-            aggregated[word]['right_chars'] = [{'char': char, 'freq': freq} for char, freq in aggregated[word]['right_chars'].items()]
+            # 将字符频率字典转换为列表
+            aggregated[word]['left_chars'] = [{'char': char, 'freq': freq} for char, freq in
+                                              aggregated[word]['left_chars'].items()]
+            aggregated[word]['right_chars'] = [{'char': char, 'freq': freq} for char, freq in
+                                               aggregated[word]['right_chars'].items()]
 
         # 转换为普通字典
         aggregated = {word: dict(stats) for word, stats in aggregated.items()}
 
         return aggregated
+
+    def save_to_csv(self, aggregated):
+        rows = []
+        for term, info in aggregated.items():
+            row = {
+                'term': term,
+                'term_freq': info['term_freq'],
+                'doc_freq': info['doc_freq'],
+                'status': info['status'],
+                'left_chars': info['left_chars'],  # 转换为 JSON 字符串
+                'right_chars': info['right_chars']  # 转换为 JSON 字符串
+            }
+            rows.append(row)
+
+        df = pd.DataFrame(rows)
+
+        # 将 DataFrame 保存为 CSV 文件
+        csv_file_path = 'output/terms_data.csv'
+        df.to_csv(csv_file_path, index=False)
 
 
 if __name__ == '__main__':

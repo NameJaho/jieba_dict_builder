@@ -1,6 +1,10 @@
+import re
+import time
+
 import pandas as pd
 import warnings
 import utils
+from ngram_statistics import NgramStatistics
 from word_splitter.word_cutter import WordCutter
 
 warnings.filterwarnings("ignore")
@@ -8,6 +12,10 @@ warnings.filterwarnings("ignore")
 CONFIG_FILE = 'config/config.yaml'
 INPUT_FILE = 'input/random_user_10w.csv'
 
+
+from pandarallel import pandarallel
+
+pandarallel.initialize(progress_bar=True, verbose=2)
 
 class NgramScanner:
     def __init__(self):
@@ -20,7 +28,7 @@ class NgramScanner:
     def preprocess():
         df = pd.read_csv(INPUT_FILE)
         df.dropna(subset=['final_content'], inplace=True)
-        df = df[:100]
+        # df = df[:100]
         return df
 
     def cut_words(self, df):
@@ -29,72 +37,169 @@ class NgramScanner:
         return df
 
     # 返回最长单词
-    def find_max_length_word(self, words, index, direction):
-        next_char = ""
+    # def find_max_length_word(self, words, index, direction):
+    def find_max_length_word(self, content, char_list, max_length=4):
+        results = []
+        occurrences = {}  # This dictionary will store the positions of each character to avoid duplicates
 
-        if direction == 'left':
-            start_index = index - 1
-            end_index = -1
-            step = -1
-        else:
-            start_index = index + 1
-            end_index = len(words)
-            step = 1
+        for char in char_list:
+            start_pos = 0
+            while start_pos < len(content):
+                found_pos = content.find(char, start_pos)
+                if found_pos == -1:
+                    break  # No more occurrences
+                if found_pos not in occurrences:
+                    # Calculate start and end indices for the substring
+                    start_idx = max(0, found_pos - max_length)
+                    end_idx = min(len(content), found_pos + max_length + 1)
 
-        for i in range(start_index, end_index, step):
-            if len(words[i]) + len(next_char) <= self.word_length_max:
-                if direction == 'left':
-                    next_char = words[i] + next_char
-                else:
-                    next_char += words[i]
-            else:
-                break
+                    # Extract the substring
+                    substring = content[start_idx:end_idx]
 
-        return next_char
+                    # Calculate necessary padding
+                    left_padding = ' ' * (max_length - (found_pos - start_idx))
+                    right_padding = ' ' * ((found_pos + max_length + 1) - end_idx)
+
+                    # Apply padding and store the result
+                    padded_substring = left_padding + substring + right_padding
+                    results.append((char, padded_substring))
+                    occurrences[found_pos] = True
+
+                start_pos = found_pos + 1  # Move start_pos forward to find next occurrence
+
+        return results
 
     @staticmethod
-    def generate_ngrams(word, direction='left', max_length=4):
+    def generate_ngrams(word, index, note_id, direction='left', max_length=4):
+        """
+        Generate n-grams from a given index within a word.
+
+        :param word: The word from which to generate n-grams.
+        :param index: The starting index for n-gram generation.
+        :param direction: The direction for n-gram generation ('left' or 'right').
+        :param max_length: The maximum length of n-grams to generate.
+        :return: A tuple containing lists of n-grams, left characters (if applicable), and right characters (if applicable).
+        """
         results = []
+        left_chars = []
+        right_chars = []
+        ngrams = []
+        if len(word) == 2:
+            return results, left_chars, right_chars, ngrams
         if direction == 'left':
-            # 从左至右生成组合
-            for i in range(1, min(len(word), max_length) + 1):
-                results.append(word[:i])
+            # Generate n-grams to the left of the index
+            start = max(0, index - max_length)  # Ensure start is not negative
+            end = index + 1  # Include the character at the index
+            for i in range(end - 1, start - 1, -1):
+                ngram = word[i:end]
+                if len(ngram) > 1 and len(
+                        ngram) <= max_length:  # Only consider left/right chars if n-gram length is more than 1
+                    left_char = word[i - 1] if i > 0 else ''  # No left character if at the beginning
+                    right_char = word[end] if end < len(word) else ''  # Right character after the n-gram
+                    left_chars.append(left_char)
+                    right_chars.append(right_char)
+                    results.append(ngram)
+                    ngrams.append({'word': ngram, 'left_char': left_char, 'right_char': right_char, 'doc_id': note_id})
+                else:
+                    left_char = ''
+                    right_char = ''
+                # print(f'N-gram: "{ngram}", Left char: "{left_char}", Right char: "{right_char}"')
         elif direction == 'right':
-            # 从右至左生成组合
-            for i in range(len(word), len(word) - min(len(word), max_length), -1):
-                results.append(word[i - 1:])
-        return [i for i in results if len(i) > 1]
+            # Generate n-grams to the right of the index
+            start = index  # Start from the index
+            end = min(len(word), index + max_length)  # Ensure end is within bounds
+            for i in range(start, end):
+                ngram = word[start:i + 1]
+                if len(ngram) > 1:  # Only consider left/right chars if n-gram length is more than 1
+                    left_char = word[start - 1] if start > 0 else ''  # Left character before the n-gram
+                    right_char = word[i + 1] if i + 1 < len(word) else ''  # Right character after the n-gram
+                    left_chars.append(left_char)
+                    right_chars.append(right_char)
+                    results.append(ngram)
+                    ngrams.append({'word': ngram, 'left_char': left_char, 'right_char': right_char, 'doc_id': note_id})
+
+                else:
+                    left_char = ''
+                    right_char = ''
+                # print(f'N-gram: "{ngram}", Left char: "{left_char}", Right char: "{right_char}"')
+
+        return results, left_chars, right_chars, ngrams
+
+    @staticmethod
+    def remove_punctuation(text):
+        # 使用正则表达式去除所有非中文字符、非字母、非数字的字符
+        cleaned_text = re.sub(r'[^\u4e00-\u9fa5a-zA-Z0-9\s]', '', text)
+        return cleaned_text
 
     # extract ngrams from both side
-    def extract_ngrams(self, words, index):
-        key_char = words[index]
+    def extract_neighbor(self, row):
+        content = self.remove_punctuation(row['final_content'])
+        char_list = [i for i in row['words'] if len(i) == 1]
+        neighbor_char = self.find_max_length_word(content, char_list)
+        return neighbor_char
 
+    def extract_ngrams(self, row):
+        # words = [("开", "     开榴莲15"), ("开", " 榴莲最终开出来92"), ("小", " 60块的小榴莲最终")]
+        words, note_id = row['words_neighbor'], row['note_id']
         ngrams = []
+        for word in words:
+            keyword = word[0]
+            long_word = word[1]
+            left = long_word[:7].strip()
+            right = long_word[4:].strip()
+            # print(f'word: {word} left: {left} right: {right}')
 
-        # 向左搜索
-        if index > 0:
-            next_char = self.find_max_length_word(words, index, 'left')
-            ngrams.extend(self.generate_ngrams(next_char + key_char, 'right'))
+            if right.startswith(keyword):
+                right_index = 0
+            else:
+                right_index = 1
 
-        # 向右搜索
-        if index < len(words) - 1:
-            next_char = self.find_max_length_word(words, index, 'right')
-            ngrams.extend(self.generate_ngrams(key_char + next_char, 'left'))
+            if left.startswith(keyword):
+                left_index = 0
+            else:
+                left_index = 4
+            results, left_chars, right_chars, ngram = self.generate_ngrams(left, left_index, note_id, 'left')
+            # print(f'left {left} ngrams :{ngram}')
+            if ngram:
+                ngrams.extend(ngram)
+
+            results, left_chars, right_chars, ngram = self.generate_ngrams(right, right_index, note_id, 'right')
+            # print(f'right {right} ngrams :{ngram}')
+            if ngram:
+                ngrams.extend(ngram)
 
         return ngrams
-
-    def scan(self, words):
-        result = {}
-        for index, word in enumerate(words):
-            if len(word) == 1:
-                ngrams = self.extract_ngrams(words, index)
-                result[word] = ngrams
-        return result
 
 
 if __name__ == '__main__':
     scanner = NgramScanner()
+    start = time.time()
     df = scanner.preprocess()
+    print('\npreprocess cost time:', time.time() - start)
     df = scanner.cut_words(df)
-    df['keywords'] = df['words'].apply(lambda x: scanner.scan(x))
-    print(df.head(10))
+    df['words_neighbor'] = df.apply(
+        lambda x: scanner.extract_neighbor(x), axis=1)
+    print('\nextract_neighbor cost time:', time.time() - start)
+    df['ngrams'] = df.parallel_apply(scanner.extract_ngrams, axis=1)
+    print(f'\ninit ngrams cost time: {time.time() - start}')
+    df['ngrams'].explode().to_csv('output/ngrams_10w.csv', index=False)
+    print(f'\nsave ngrams_10w cost time: {time.time() - start}')
+    # df.to_csv('output/keywords.csv', index=False)
+
+    # [('开', '    开榴莲15'), ('开', '榴莲最终开出来92'), ('小', '60块的小榴莲最终')]
+    # row = {"words_neighbor":[('开', '    开榴莲15'), ('开', '榴莲最终开出来92'), ('小', '60块的小榴莲最终')],"note_id":123}
+    # r = scanner.extract_ngrams(row)
+    # print(r)
+    start = time.time()
+    ngram_stat = NgramStatistics()
+    df['ngrams_len'] = df['ngrams'].apply(len)
+    print('\nngrams_len cost time:', time.time() - start)
+    filter_df = df[df['ngrams_len'] > 0]
+    ngrams = filter_df.explode('ngrams')[['ngrams']].to_dict(orient='records')
+    print('\nexplode cost time:', time.time() - start)
+    processed_data = [item['ngrams'] for item in ngrams]
+
+    result = ngram_stat.aggregate_words(processed_data)
+    print('\naggregate_words cost time:', time.time() - start)
+    ngram_stat.save_to_csv(result)
+    print('\nsave_to_csv cost time:', time.time() - start)
