@@ -2,6 +2,9 @@ from collections import defaultdict, Counter
 from multiprocessing import Pool, cpu_count
 
 
+import pandas as pd
+
+
 class NgramStatistics:
     def __init__(self):
         pass
@@ -50,6 +53,25 @@ class NgramStatistics:
         aggregated = {word: dict(stats) for word, stats in aggregated.items()}
 
         return aggregated
+
+    def save_to_csv(self, aggregated):
+        rows = []
+        for term, info in aggregated.items():
+            row = {
+                'term': term,
+                'term_freq': info['term_freq'],
+                'doc_freq': info['doc_freq'],
+                'status': info['status'],
+                'left_chars': info['left_chars'],  # 转换为 JSON 字符串
+                'right_chars': info['right_chars']  # 转换为 JSON 字符串
+            }
+            rows.append(row)
+
+        df = pd.DataFrame(rows)
+
+        # 将 DataFrame 保存为 CSV 文件
+        csv_file_path = 'output/terms_data.csv'
+        df.to_csv(csv_file_path, index=False)
 
     @staticmethod
     def process_chunk(chunk):
