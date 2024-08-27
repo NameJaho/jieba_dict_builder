@@ -1,4 +1,6 @@
-from collections import defaultdict
+from collections import defaultdict, Counter
+from multiprocessing import Pool, cpu_count
+
 
 class NgramStatistics:
     def __init__(self):
@@ -10,8 +12,8 @@ class NgramStatistics:
             'term_freq': 0,
             'doc_freq': 0,
             'status': 0,
-            'left_chars': defaultdict(int),
-            'right_chars': defaultdict(int)
+            'left_chars': Counter(),
+            'right_chars': Counter()
         })
 
         doc_freq_set = defaultdict(set)
@@ -38,15 +40,53 @@ class NgramStatistics:
         for word in aggregated:
             aggregated[word]['doc_freq'] = len(doc_freq_set[word])
 
-        # 将字符频率字典转换为列表
-        for word in aggregated:
-            aggregated[word]['left_chars'] = [{'char': char, 'freq': freq} for char, freq in aggregated[word]['left_chars'].items()]
-            aggregated[word]['right_chars'] = [{'char': char, 'freq': freq} for char, freq in aggregated[word]['right_chars'].items()]
+            # 将字符频率字典转换为列表
+            aggregated[word]['left_chars'] = [{'char': char, 'freq': freq} for char, freq in
+                                              aggregated[word]['left_chars'].items()]
+            aggregated[word]['right_chars'] = [{'char': char, 'freq': freq} for char, freq in
+                                               aggregated[word]['right_chars'].items()]
 
         # 转换为普通字典
         aggregated = {word: dict(stats) for word, stats in aggregated.items()}
 
         return aggregated
+
+    @staticmethod
+    def process_chunk(chunk):
+        return NgramStatistics.aggregate_words(chunk)
+
+    @staticmethod
+    def parallel_aggregate(words, chunk_size=10000):
+        chunks = [words[i:i + chunk_size] for i in range(0, len(words), chunk_size)]
+
+        with Pool(cpu_count()) as pool:
+            results = pool.map(NgramStatistics.process_chunk, chunks)
+
+        final_result = {}
+        for result in results:
+            for word, stats in result.items():
+                if word not in final_result:
+                    final_result[word] = {
+                        'term_freq': 0,
+                        'doc_freq': 0,
+                        'status': 0,
+                        'left_chars': Counter(),
+                        'right_chars': Counter()
+                    }
+                final_result[word]['term_freq'] += stats['term_freq']
+                final_result[word]['doc_freq'] += stats['doc_freq']
+                for char_freq in stats['left_chars']:
+                    final_result[word]['left_chars'][char_freq['char']] += char_freq['freq']
+                for char_freq in stats['right_chars']:
+                    final_result[word]['right_chars'][char_freq['char']] += char_freq['freq']
+
+        for word in final_result:
+            final_result[word]['left_chars'] = [{'char': char, 'freq': freq} for char, freq in
+                                                final_result[word]['left_chars'].items()]
+            final_result[word]['right_chars'] = [{'char': char, 'freq': freq} for char, freq in
+                                                 final_result[word]['right_chars'].items()]
+
+        return final_result
 
 
 if __name__ == '__main__':
@@ -61,5 +101,5 @@ if __name__ == '__main__':
         {'word': '吃饭', 'left_char': '你', 'right_char': '没', 'doc_id': '0004'},
     ]
 
-    result = ngram_stat.aggregate_words(_words)
+    result = ngram_stat.parallel_aggregate(_words)
     print(result)
