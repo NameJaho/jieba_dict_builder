@@ -21,8 +21,8 @@ class NgramsFreqStat():
         return df
 
     def save_freq(self, df):
-        df['single_char'].explode().value_counts().to_csv('output/single_char_freq.csv')
-        df['ngram'].explode().value_counts().to_csv('output/ngram_freq.csv')
+        df['single_char'].explode().value_counts().to_csv('output/char_freq.csv')
+        df['ngram'].explode().value_counts().to_csv('output/word_freq.csv')
 
 
 if __name__ == '__main__':

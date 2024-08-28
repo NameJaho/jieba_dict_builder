@@ -203,12 +203,12 @@ if __name__ == '__main__':
     ngram_freq.save_freq(df)
     print(f'\nsave ngram_freq cost time: {time.time() - start}')
 
-    # ngram_dict = ngrams.to_dict(orient='records')
-    #
-    # print('\nexplode cost time:', time.time() - start)
-    # processed_data = [item['ngrams'] for item in ngrams]
-    #
-    # result = ngram_stat.aggregate_words(processed_data, 30)
-    # print('\naggregate_words cost time:', time.time() - start)
-    # ngram_stat.save_to_csv(result)
-    # print('\nsave_to_csv cost time:', time.time() - start)
+    ngram_dict = ngrams.to_dict(orient='records')
+
+    print('\nexplode cost time:', time.time() - start)
+    processed_data = [item['ngrams'] for item in ngrams]
+
+    result = ngram_stat.aggregate_words(processed_data, 30)
+    print('\naggregate_words cost time:', time.time() - start)
+    ngram_stat.save_to_csv(result)
+    print('\nsave_to_csv cost time:', time.time() - start)
