@@ -6,6 +6,7 @@ import pandas as pd
 import warnings
 import utils
 from ngram_statistics import NgramStatistics
+from ngrams_freq_stat import NgramsFreqStat
 from word_splitter.word_cutter import WordCutter
 
 warnings.filterwarnings("ignore")
@@ -13,10 +14,10 @@ warnings.filterwarnings("ignore")
 CONFIG_FILE = 'config/config.yaml'
 INPUT_FILE = 'input/random_user_10w.csv'
 
-
 from pandarallel import pandarallel
 
 pandarallel.initialize(progress_bar=True, verbose=2)
+
 
 class NgramScanner:
     def __init__(self):
@@ -92,7 +93,7 @@ class NgramScanner:
             start = max(0, index - max_length)  # Ensure start is not negative
             end = index + 1  # Include the character at the index
             for i in range(end - 1, start - 1, -1):
-                ngram = word[i:end]
+                ngram = word[i:end].strip()
                 if len(ngram) > 1 and len(
                         ngram) <= max_length:  # Only consider left/right chars if n-gram length is more than 1
                     left_char = word[i - 1] if i > 0 else ''  # No left character if at the beginning
@@ -110,7 +111,7 @@ class NgramScanner:
             start = index  # Start from the index
             end = min(len(word), index + max_length)  # Ensure end is within bounds
             for i in range(start, end):
-                ngram = word[start:i + 1]
+                ngram = word[start:i + 1].strip()
                 if len(ngram) > 1:  # Only consider left/right chars if n-gram length is more than 1
                     left_char = word[start - 1] if start > 0 else ''  # Left character before the n-gram
                     right_char = word[i + 1] if i + 1 < len(word) else ''  # Right character after the n-gram
@@ -129,7 +130,7 @@ class NgramScanner:
     @staticmethod
     def remove_punctuation(text):
         # 使用正则表达式去除所有非中文字符、非字母、非数字的字符
-        cleaned_text = re.sub(r'[^\u4e00-\u9fa5a-zA-Z0-9\s]', ' ', text)
+        cleaned_text = re.sub(r'[^\u4e00-\u9fa5a-zA-Z\s]', ' ', text)
         return cleaned_text
 
     # extract ngrams from both side
@@ -183,19 +184,31 @@ if __name__ == '__main__':
     print('\nextract_neighbor cost time:', time.time() - start)
     df['ngrams'] = df.parallel_apply(scanner.extract_ngrams, axis=1)
     print(f'\ninit ngrams cost time: {time.time() - start}')
-    df['ngrams'].explode().to_csv('output/ngrams_10w.csv', index=False)
+
+    df['ngrams'].explode().to_csv('output/ngrams_10w_0828.csv', index=False)
     print(f'\nsave ngrams_10w cost time: {time.time() - start}')
-    # df.to_csv('output/keywords.csv', index=False)
+    df.to_csv('output/keywords_0828.csv', index=False)
+    print(f'\nsave origin_file cost time: {time.time() - start}')
 
     start = time.time()
     ngram_stat = NgramStatistics()
     df['ngrams_len'] = df['ngrams'].apply(len)
     filter_df = df[df['ngrams_len'] > 0]
-    ngrams = filter_df.explode('ngrams')[['ngrams']].to_dict(orient='records')
-    print('\nexplode cost time:', time.time() - start)
-    processed_data = [item['ngrams'] for item in ngrams]
+    ngrams = filter_df.explode('ngrams')[['ngrams']]
+    print(f'\nexplode cost time: {time.time() - start}')
 
-    result = ngram_stat.aggregate_words(processed_data,30)
-    print('\naggregate_words cost time:', time.time() - start)
-    ngram_stat.save_to_csv(result)
-    print('\nsave_to_csv cost time:', time.time() - start)
+    # 统计 ngram 词频
+    ngram_freq = NgramsFreqStat()
+    df = ngram_freq.init_freq(ngrams)
+    ngram_freq.save_freq(df)
+    print(f'\nsave ngram_freq cost time: {time.time() - start}')
+
+    # ngram_dict = ngrams.to_dict(orient='records')
+    #
+    # print('\nexplode cost time:', time.time() - start)
+    # processed_data = [item['ngrams'] for item in ngrams]
+    #
+    # result = ngram_stat.aggregate_words(processed_data, 30)
+    # print('\naggregate_words cost time:', time.time() - start)
+    # ngram_stat.save_to_csv(result)
+    # print('\nsave_to_csv cost time:', time.time() - start)
