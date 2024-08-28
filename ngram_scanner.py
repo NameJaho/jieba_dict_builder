@@ -6,6 +6,7 @@ import pandas as pd
 import warnings
 import utils
 from ngram_statistics import NgramStatistics
+from ngrams_freq_stat import NgramsFreqStat
 from word_splitter.word_cutter import WordCutter
 
 warnings.filterwarnings("ignore")
@@ -187,17 +188,22 @@ if __name__ == '__main__':
     df['ngrams'].explode().to_csv('output/ngrams_10w_0828.csv', index=False)
     print(f'\nsave ngrams_10w cost time: {time.time() - start}')
     df.to_csv('output/keywords_0828.csv', index=False)
+    print(f'\nsave origin_file cost time: {time.time() - start}')
 
-    # [('开', '    开榴莲15'), ('开', '榴莲最终开出来92'), ('小', '60块的小榴莲最终')]
-    # row = {"words_neighbor":[('开', '    开榴莲15'), ('开', '榴莲最终开出来92'), ('小', '60块的小榴莲最终')],"note_id":123}
-    # r = scanner.extract_ngrams(row)
-    # print(r)
+    start = time.time()
+    ngram_stat = NgramStatistics()
+    df['ngrams_len'] = df['ngrams'].apply(len)
+    filter_df = df[df['ngrams_len'] > 0]
+    ngrams = filter_df.explode('ngrams')[['ngrams']]
+    print(f'\nexplode cost time: {time.time() - start}')
 
-    # start = time.time()
-    # ngram_stat = NgramStatistics()
-    # df['ngrams_len'] = df['ngrams'].apply(len)
-    # filter_df = df[df['ngrams_len'] > 0]
-    # ngrams = filter_df.explode('ngrams')[['ngrams']].to_dict(orient='records')
+    # 统计 ngram 词频
+    ngram_freq = NgramsFreqStat()
+    df = ngram_freq.init_freq(ngrams)
+    ngram_freq.save_freq(df)
+    print(f'\nsave ngram_freq cost time: {time.time() - start}')
+
+    # ngram_dict = ngrams.to_dict(orient='records')
     #
     # print('\nexplode cost time:', time.time() - start)
     # processed_data = [item['ngrams'] for item in ngrams]
