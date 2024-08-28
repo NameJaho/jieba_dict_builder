@@ -129,7 +129,7 @@ class NgramScanner:
     @staticmethod
     def remove_punctuation(text):
         # 使用正则表达式去除所有非中文字符、非字母、非数字的字符
-        cleaned_text = re.sub(r'[^\u4e00-\u9fa5a-zA-Z0-9\s]', '', text)
+        cleaned_text = re.sub(r'[^\u4e00-\u9fa5a-zA-Z0-9\s]', ' ', text)
         return cleaned_text
 
     # extract ngrams from both side
@@ -187,10 +187,6 @@ if __name__ == '__main__':
     print(f'\nsave ngrams_10w cost time: {time.time() - start}')
     # df.to_csv('output/keywords.csv', index=False)
 
-    # [('开', '    开榴莲15'), ('开', '榴莲最终开出来92'), ('小', '60块的小榴莲最终')]
-    # row = {"words_neighbor":[('开', '    开榴莲15'), ('开', '榴莲最终开出来92'), ('小', '60块的小榴莲最终')],"note_id":123}
-    # r = scanner.extract_ngrams(row)
-    # print(r)
     start = time.time()
     ngram_stat = NgramStatistics()
     df['ngrams_len'] = df['ngrams'].apply(len)
