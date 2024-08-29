@@ -194,7 +194,7 @@ if __name__ == '__main__':
 
     ngrams.to_csv('output/ngrams_10w_0828.csv', index=False)
     print(f'\nsave ngrams_10w cost time: {time.time() - start}')
-    sys.exit()
+
     df.to_csv('output/keywords_0828.csv', index=False)
     print(f'\nsave origin_file cost time: {time.time() - start}')
 
