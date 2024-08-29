@@ -12,7 +12,6 @@ class MICalculator:
     def __init__(self):
         config = utils.load_config(CONFIG_FILE)
         self.blacklist = config['BLACKLIST']
-        self.df_word_freq = pd.read_csv(WORD_FREQ_FILE)
 
     def find_char_frequency(self, char):
         df = pd.read_csv(CHAR_FREQ_FILE)
@@ -21,7 +20,7 @@ class MICalculator:
         return frequency
 
     def find_word_frequency(self, word):
-        df = self.df_word_freq
+        df = pd.read_csv(WORD_FREQ_FILE)
         # 找到所有包含输入词的词频之和
         frequency = df[df['term'].str.contains(word, regex=False)]['term_freq'].sum()
         return frequency
@@ -53,6 +52,5 @@ class MICalculator:
         # 计算互信息 判断凝固度
         mi = math.log(p_term / math.prod(p_chars.values()), 2)
 
-        #print(f"Mutual information for term '{term}': {mi}")
+        # print(f"Mutual information for term '{term}': {mi}")
         return mi
-

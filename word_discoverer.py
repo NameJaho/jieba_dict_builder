@@ -22,7 +22,6 @@ class WordDiscoverer:
         self.entropy_calculator = EntropyCalculator()
         self.mi_calculator = MICalculator()
 
-
     def is_in_blacklist(self, term):
         return any(char in self.blacklist for char in term)
 
@@ -82,6 +81,6 @@ if __name__ == '__main__':
     stat = NgramsFreqStat()
 
     df = word_discoverer.save_entropy_results()
-    stat.save_char_freq(df)
+    stat.save_char_freq()
 
     word_discoverer.save_mi_results()

@@ -7,6 +7,7 @@ import warnings
 import utils
 from ngram_statistics import NgramStatistics
 from ngrams_freq_stat import NgramsFreqStat
+from word_discoverer import WordDiscoverer
 from word_splitter.word_cutter import WordCutter
 
 warnings.filterwarnings("ignore")
@@ -16,7 +17,7 @@ INPUT_FILE = 'input/random_user_20W_0829.csv'
 
 from pandarallel import pandarallel
 
-pandarallel.initialize(progress_bar=True, verbose=2)
+pandarallel.initialize()
 
 
 class NgramScanner:
@@ -198,11 +199,11 @@ if __name__ == '__main__':
     ngrams = filter_df.explode('ngrams')[['ngrams']]
     print(f'\nexplode cost time: {time.time() - start}')
 
-    # 统计 ngram 词频
-    ngram_freq = NgramsFreqStat()
-    df = ngram_freq.init_freq(ngrams)
-    ngram_freq.save_freq(df)
-    print(f'\nsave ngram_freq cost time: {time.time() - start}')
+    # # 统计 ngram 词频
+    # ngram_freq = NgramsFreqStat()
+    # df = ngram_freq.init_freq(ngrams)
+    # ngram_freq.save_freq(df)
+    # print(f'\nsave ngram_freq cost time: {time.time() - start}')
 
     ngram_dict = ngrams.to_dict(orient='records')
 
@@ -212,5 +213,15 @@ if __name__ == '__main__':
     result = ngram_stat.aggregate_words(processed_data, 30)
     print('\naggregate_words cost time:', time.time() - start)
     ngram_stat.save_to_csv(result)
-    print('\nsave_to_csv cost time:', time.time() - start)
+    print('\nsave_term_freq_csv cost time:', time.time() - start)
+
+    word_discoverer = WordDiscoverer()
+
+    stat = NgramsFreqStat()
+
+    word_df = word_discoverer.save_entropy_results()
+    stat.save_char_freq()
+
+    word_discoverer.save_mi_results()
+
     print('total cost time:', time.time() - s)

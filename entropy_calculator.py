@@ -17,9 +17,6 @@ class EntropyCalculator:
     def __init__(self):
         config = utils.load_config(CONFIG_FILE)
         self.blacklist = config['BLACKLIST']
-        self.df_char_freq = pd.read_csv(CHAR_FREQ_FILE)
-        self.df_word_freq = pd.read_csv(WORD_FREQ_FILE)
-
 
     def is_in_blacklist(self, term):
         return any(char in self.blacklist for char in term)
@@ -51,10 +48,10 @@ class EntropyCalculator:
 
         # 计算左熵
         left_entropy = self.calculate_single_entropy(left_neighbors)
-        #print(left_entropy)
+        # print(left_entropy)
         # 计算右熵
         right_entropy = self.calculate_single_entropy(right_neighbors)
-        #print(right_entropy)
+        # print(right_entropy)
 
         entropy = (left_entropy + right_entropy) / 2
         if left_entropy < 0.2 or right_entropy < 0.2:
@@ -63,13 +60,13 @@ class EntropyCalculator:
         return entropy
 
     def find_char_frequency(self, char):
-        df = self.df_char_freq
+        df = pd.read_csv(CHAR_FREQ_FILE)
         # 找到对应的词频
         frequency = df.loc[df['single_char'] == char, 'count'].iloc[0] if char in df['single_char'].values else 0
         return frequency
 
     def find_word_frequency(self, word):
-        df = self.df_word_freq
+        df = pd.read_csv(WORD_FREQ_FILE)
         # 找到所有包含输入词的词频之和
         frequency = df[df['ngram'].str.contains(word, regex=False)]['count'].sum()
         return frequency
@@ -101,7 +98,7 @@ class EntropyCalculator:
         # 计算互信息 判断凝固度
         mi = math.log(p_term / math.prod(p_chars.values()), 2)
 
-        #print(f"Mutual information for term '{term}': {mi}")
+        # print(f"Mutual information for term '{term}': {mi}")
         return mi
 
 
@@ -141,7 +138,3 @@ if __name__ == '__main__':
         writer.writeheader()
         for result in entropy_results:
             writer.writerow(result)
-
-
-
-
