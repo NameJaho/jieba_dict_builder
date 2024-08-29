@@ -220,9 +220,8 @@ if __name__ == '__main__':
     stat = NgramsFreqStat()
 
     word_df = word_discoverer.save_entropy_results()
-    stat.save_char_freq(word_df)
+    stat.save_char_freq()
 
     word_discoverer.save_mi_results()
 
     print('total cost time:', time.time() - s)
-
