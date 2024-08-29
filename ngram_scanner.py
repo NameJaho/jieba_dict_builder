@@ -135,7 +135,7 @@ class NgramScanner:
 
     # extract ngrams from both side
     def extract_neighbor(self, row):
-        content = self.remove_punctuation(row['final_content'])
+        content = self.remove_punctuation(row['content'])
         char_list = [i for i in row['words'] if len(i) == 1]
         neighbor_char = self.find_max_length_word(content, char_list)
         return neighbor_char
