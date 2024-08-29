@@ -3,8 +3,9 @@ import pandas as pd
 import math
 
 CONFIG_FILE = 'config/config.yaml'
-CHAR_FREQ_FILE = 'output/char_freq.csv'
+CHAR_FREQ_FILE = 'output/char_freq_entropy.csv'
 WORD_FREQ_FILE = 'output/word_freq.csv'
+ENTROPY_CHAR_FREQ_FILE = 'output/char_freq_entropy.csv'
 
 
 class MICalculator:
@@ -23,7 +24,7 @@ class MICalculator:
     def find_word_frequency(self, word):
         df = self.df_word_freq
         # 找到所有包含输入词的词频之和
-        frequency = df[df['ngram'].str.contains(word, regex=False)]['count'].sum()
+        frequency = df[df['term'].str.contains(word, regex=False)]['term_freq'].sum()
         return frequency
 
     def calculate_mutual_information(self, term):
