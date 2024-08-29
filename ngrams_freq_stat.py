@@ -8,9 +8,11 @@ from utils import cost_time
 
 pandarallel.initialize()
 
-ENTROPY_RESULT_FILE = 'output/entropy_result.csv'
-ENTROPY_CHAR_FREQ_FILE = 'output/char_freq.csv'
+ENTROPY_RESULT_FILE = 'output/terms_data.csv'
 
+CHAR_FREQ_FILE = 'output/char_freq.csv'
+WORD_FREQ_FILE = 'output/word_freq.csv'
+JIEBA_DICT = 'word_splitter/dict.txt'
 
 class NgramsFreqStat():
     def __init__(self):
@@ -23,35 +25,23 @@ class NgramsFreqStat():
         return df
 
     def init_jieba_dict(self):
-        with open('word_splitter/dict.txt', 'r') as f:
+        with open(JIEBA_DICT, 'r') as f:
             jieba_dict = f.readlines()
         words = [word.strip().split(' ')[0] for word in jieba_dict]
-        j_df = pd.DataFrame({'ngram': words})
-        return j_df
+        jieba_df = pd.DataFrame({'ngram': words})
+        return jieba_df
 
-    def calculate_freq_by_entropy(self, df, j_df):
-        diff_in_jieba = df[~df['term'].isin(j_df['ngram'])]
-        diff_in_jieba.to_csv('output/entropy_result_diff_jieba.csv', index=False)
+    def calculate_freq_by_entropy(self, df, jieba_df):
+        diff_in_jieba = df[~df['term'].isin(jieba_df['ngram'])]
+        diff_in_jieba.to_csv(WORD_FREQ_FILE, index=False)
 
-        diff_in_jieba[['term', 'term_freq']].to_csv(
-            'output/word_freq.csv', index=False)
+        diff_in_jieba[['term', 'term_freq']].to_csv(WORD_FREQ_FILE, index=False)
 
         diff_in_jieba['single_char'] = diff_in_jieba['term'].parallel_apply(lambda x: list(x))
-        diff_in_jieba['single_char'].explode().value_counts().to_csv(ENTROPY_CHAR_FREQ_FILE)
+        diff_in_jieba['single_char'].explode().value_counts().to_csv(CHAR_FREQ_FILE)
 
-    @cost_time
-    def init_freq(self, df):
-        df['ngram'] = df['ngrams'].parallel_apply(lambda x: x['word'])
-        df['single_char'] = df['ngram'].parallel_apply(lambda x: list(x))
-
-        return df
-
-    @cost_time
-    def save_freq(self, df):
-        df['single_char'].explode().value_counts().to_csv('output/char_freq.csv')
-        df['ngram'].explode().value_counts().to_csv('output/word_freq.csv')
-
-    def save_char_freq(self, df):
+    def save_char_freq(self):
+        df = self.preprocess_data()
         jieba_df = self.init_jieba_dict()
         self.calculate_freq_by_entropy(df, jieba_df)
 
