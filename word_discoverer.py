@@ -8,7 +8,7 @@ TERMS_FILE = 'output/terms_data.csv'
 ENTROPY_RESULT_FILE = 'output/entropy_result.csv'
 
 
-class NewWordDetector:
+class WordDiscoverer:
     def __init__(self):
         self.entropy_calculator = EntropyCalculator()
         self.mi_calculator = MICalculator()
