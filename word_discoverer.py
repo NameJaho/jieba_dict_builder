@@ -6,6 +6,7 @@ from mi_calculator import MICalculator
 
 TERMS_FILE = 'output/terms_data.csv'
 ENTROPY_RESULT_FILE = 'output/entropy_result.csv'
+FINAL_RESULT_FILE = 'output/final_result.csv'
 
 
 class WordDiscoverer:
@@ -38,11 +39,30 @@ class WordDiscoverer:
         df = pl.DataFrame(entropy_results)
         df.write_csv(ENTROPY_RESULT_FILE, separator=",")
 
+    @cost_time
     def filter_with_mi(self):
-        pass
+        mi_results = []
+        df = pl.read_csv(ENTROPY_RESULT_FILE)
+
+        for row in df.iter_rows(named=True):
+            term = row['term']
+            term_freq = row['term_freq']
+            doc_freq = row['doc_freq']
+            mi = self.mi_calculator.calculate_mutual_information(term)
+            if mi > -4.5:
+                mi_results.append({'term': term, 'term_freq': term_freq, 'doc_freq': doc_freq})
+
+        return mi_results
+
+    @cost_time
+    def save_mi_results(self):
+        mi_results = self.filter_with_mi()
+        df = pl.DataFrame(mi_results)
+        df.write_csv(FINAL_RESULT_FILE, separator=",")
 
 
 if __name__ == '__main__':
-    new_word_detector = NewWordDetector()
-    new_word_detector.save_entropy_results()
+    word_discoverer = WordDiscoverer()
+    word_discoverer.save_entropy_results()
+    word_discoverer.save_mi_results()
 
