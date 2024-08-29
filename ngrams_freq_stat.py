@@ -9,7 +9,7 @@ from utils import cost_time
 pandarallel.initialize()
 
 ENTROPY_RESULT_FILE = 'output/entropy_result.csv'
-ENTROPY_CHAR_FREQ_FILE = 'output/char_freq_entropy.csv'
+ENTROPY_CHAR_FREQ_FILE = 'output/char_freq.csv'
 
 
 class NgramsFreqStat():
@@ -23,7 +23,7 @@ class NgramsFreqStat():
         return df
 
     def init_jieba_dict(self):
-        with open('output/jieba_dict.txt', 'r') as f:
+        with open('word_splitter/dict.txt', 'r') as f:
             jieba_dict = f.readlines()
         words = [word.strip().split(' ')[0] for word in jieba_dict]
         j_df = pd.DataFrame({'ngram': words})
@@ -52,8 +52,8 @@ class NgramsFreqStat():
         df['ngram'].explode().value_counts().to_csv('output/word_freq.csv')
 
     def save_char_freq(self, df):
-        j_df = self.init_jieba_dict()
-        self.calculate_freq_by_entropy(df, j_df)
+        jieba_df = self.init_jieba_dict()
+        self.calculate_freq_by_entropy(df, jieba_df)
 
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@ import pandas as pd
 import math
 
 CONFIG_FILE = 'config/config.yaml'
-CHAR_FREQ_FILE = 'output/char_freq_entropy.csv'
+CHAR_FREQ_FILE = 'output/char_freq.csv'
 WORD_FREQ_FILE = 'output/word_freq.csv'
 ENTROPY_CHAR_FREQ_FILE = 'output/char_freq_entropy.csv'
 
@@ -12,11 +12,10 @@ class MICalculator:
     def __init__(self):
         config = utils.load_config(CONFIG_FILE)
         self.blacklist = config['BLACKLIST']
-        self.df_char_freq = pd.read_csv(CHAR_FREQ_FILE)
         self.df_word_freq = pd.read_csv(WORD_FREQ_FILE)
 
     def find_char_frequency(self, char):
-        df = self.df_char_freq
+        df = pd.read_csv(CHAR_FREQ_FILE)
         # 找到对应的词频
         frequency = df.loc[df['single_char'] == char, 'count'].iloc[0] if char in df['single_char'].values else 0
         return frequency

@@ -1,5 +1,6 @@
 # import polars as pl
 import pandas as pd
+import utils
 
 from ngrams_freq_stat import NgramsFreqStat
 from utils import cost_time
@@ -7,16 +8,23 @@ from utils import cost_time
 from entropy_calculator import EntropyCalculator
 from mi_calculator import MICalculator
 
+CONFIG_FILE = 'config/config.yaml'
 TERMS_FILE = 'output/terms_data.csv'
 ENTROPY_RESULT_FILE = 'output/entropy_result_diff_jieba.csv'
 FINAL_RESULT_FILE = 'output/final_result.csv'
-ENTROPY_CHAR_FREQ_FILE = 'output/char_freq_entropy.csv'
+ENTROPY_CHAR_FREQ_FILE = 'output/char_freq.csv'
 
 
 class WordDiscoverer:
     def __init__(self):
+        config = utils.load_config(CONFIG_FILE)
+        self.blacklist = config['BLACKLIST']
         self.entropy_calculator = EntropyCalculator()
         self.mi_calculator = MICalculator()
+
+
+    def is_in_blacklist(self, term):
+        return any(char in self.blacklist for char in term)
 
     @cost_time
     def filter_with_entropy(self):
@@ -29,6 +37,9 @@ class WordDiscoverer:
             doc_freq = row['doc_freq']
             left_chars = eval(row['left_chars'])
             right_chars = eval(row['right_chars'])
+
+            if self.is_in_blacklist(term):
+                continue
 
             entropy = self.entropy_calculator.calculate_entropy(left_chars, right_chars)
 
