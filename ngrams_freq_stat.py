@@ -9,6 +9,7 @@ from utils import cost_time
 pandarallel.initialize()
 
 ENTROPY_RESULT_FILE = 'output/entropy_result.csv'
+ENTROPY_CHAR_FREQ_FILE = 'output/char_freq_entropy.csv'
 
 
 class NgramsFreqStat():
@@ -32,8 +33,11 @@ class NgramsFreqStat():
         diff_in_jieba = df[~df['term'].isin(j_df['ngram'])]
         diff_in_jieba.to_csv('output/entropy_result_diff_jieba.csv', index=False)
 
+        diff_in_jieba[['term', 'term_freq']].to_csv(
+            'output/word_freq.csv', index=False)
+
         diff_in_jieba['single_char'] = diff_in_jieba['term'].parallel_apply(lambda x: list(x))
-        diff_in_jieba['single_char'].explode().value_counts().to_csv('output/char_freq_entropy.csv')
+        diff_in_jieba['single_char'].explode().value_counts().to_csv(ENTROPY_CHAR_FREQ_FILE)
 
     @cost_time
     def init_freq(self, df):
@@ -46,6 +50,10 @@ class NgramsFreqStat():
     def save_freq(self, df):
         df['single_char'].explode().value_counts().to_csv('output/char_freq.csv')
         df['ngram'].explode().value_counts().to_csv('output/word_freq.csv')
+
+    def save_char_freq(self, df):
+        j_df = self.init_jieba_dict()
+        self.calculate_freq_by_entropy(df, j_df)
 
 
 if __name__ == '__main__':

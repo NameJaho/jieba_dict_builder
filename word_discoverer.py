@@ -1,12 +1,16 @@
-import polars as pl
+# import polars as pl
+import pandas as pd
+
+from ngrams_freq_stat import NgramsFreqStat
 from utils import cost_time
 
 from entropy_calculator import EntropyCalculator
 from mi_calculator import MICalculator
 
 TERMS_FILE = 'output/terms_data.csv'
-ENTROPY_RESULT_FILE = 'output/entropy_result.csv'
+ENTROPY_RESULT_FILE = 'output/entropy_result_diff_jieba.csv'
 FINAL_RESULT_FILE = 'output/final_result.csv'
+ENTROPY_CHAR_FREQ_FILE = 'output/char_freq_entropy.csv'
 
 
 class WordDiscoverer:
@@ -17,9 +21,9 @@ class WordDiscoverer:
     @cost_time
     def filter_with_entropy(self):
         entropy_results = []
-        df = pl.read_csv(TERMS_FILE)
+        df = pd.read_csv(TERMS_FILE)
 
-        for row in df.iter_rows(named=True):
+        for index, row in df.iterrows():
             term = row['term']
             term_freq = row['term_freq']
             doc_freq = row['doc_freq']
@@ -36,15 +40,16 @@ class WordDiscoverer:
     @cost_time
     def save_entropy_results(self):
         entropy_results = self.filter_with_entropy()
-        df = pl.DataFrame(entropy_results)
-        df.write_csv(ENTROPY_RESULT_FILE, separator=",")
+        df = pd.DataFrame(entropy_results)
+        df.to_csv(ENTROPY_RESULT_FILE)
+        return df
 
     @cost_time
     def filter_with_mi(self):
         mi_results = []
-        df = pl.read_csv(ENTROPY_RESULT_FILE)
+        df = pd.read_csv(ENTROPY_RESULT_FILE)
 
-        for row in df.iter_rows(named=True):
+        for index, row in df.iterrows():
             term = row['term']
             term_freq = row['term_freq']
             doc_freq = row['doc_freq']
@@ -57,12 +62,15 @@ class WordDiscoverer:
     @cost_time
     def save_mi_results(self):
         mi_results = self.filter_with_mi()
-        df = pl.DataFrame(mi_results)
-        df.write_csv(FINAL_RESULT_FILE, separator=",")
+        df = pd.DataFrame(mi_results)
+        df.to_csv(FINAL_RESULT_FILE)
 
 
 if __name__ == '__main__':
     word_discoverer = WordDiscoverer()
-    word_discoverer.save_entropy_results()
-    word_discoverer.save_mi_results()
+    stat = NgramsFreqStat()
 
+    df = word_discoverer.save_entropy_results()
+    stat.save_char_freq(df)
+
+    word_discoverer.save_mi_results()
