@@ -1,4 +1,5 @@
 import re
+import sys
 import time
 from collections import defaultdict
 
@@ -148,8 +149,8 @@ class NgramScanner:
         for word in words:
             keyword = word[0]
             long_word = word[1]
-            left = long_word[:7].strip()
-            right = long_word[4:].strip()
+            left = long_word[:6].strip()
+            right = long_word[3:].strip()
             # print(f'word: {word} left: {left} right: {right}')
 
             if right.startswith(keyword):
@@ -187,16 +188,18 @@ if __name__ == '__main__':
     df['ngrams'] = df.parallel_apply(scanner.extract_ngrams, axis=1)
     print(f'\ninit ngrams cost time: {time.time() - start}')
 
-    df['ngrams'].explode().to_csv('output/ngrams_10w_0828.csv', index=False)
+    df['ngrams_len'] = df['ngrams'].apply(len)
+    filter_df = df[df['ngrams_len'] > 0]
+    ngrams = filter_df.explode('ngrams')[['ngrams']]
+
+    ngrams.to_csv('output/ngrams_10w_0828.csv', index=False)
     print(f'\nsave ngrams_10w cost time: {time.time() - start}')
+    sys.exit()
     df.to_csv('output/keywords_0828.csv', index=False)
     print(f'\nsave origin_file cost time: {time.time() - start}')
 
     start = time.time()
     ngram_stat = NgramStatistics()
-    df['ngrams_len'] = df['ngrams'].apply(len)
-    filter_df = df[df['ngrams_len'] > 0]
-    ngrams = filter_df.explode('ngrams')[['ngrams']]
     print(f'\nexplode cost time: {time.time() - start}')
 
     # # 统计 ngram 词频
