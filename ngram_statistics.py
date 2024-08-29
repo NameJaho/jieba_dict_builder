@@ -1,4 +1,6 @@
+import json
 from collections import defaultdict, Counter
+
 import pandas as pd
 
 
@@ -50,8 +52,64 @@ class NgramStatistics:
 
         # 将字符频率字典转换为列表
         for word in aggregated:
-            aggregated[word]['left_chars'] = [{'char': char, 'freq': freq} for char, freq in aggregated[word]['left_chars'].items()]
-            aggregated[word]['right_chars'] = [{'char': char, 'freq': freq} for char, freq in aggregated[word]['right_chars'].items()]
+            aggregated[word]['left_chars'] = [{'char': char, 'freq': freq} for char, freq in
+                                              aggregated[word]['left_chars'].items()]
+            aggregated[word]['right_chars'] = [{'char': char, 'freq': freq} for char, freq in
+                                               aggregated[word]['right_chars'].items()]
+
+        # 转换为普通字典
+        aggregated = {word: dict(stats) for word, stats in aggregated.items()}
+
+        return aggregated
+
+    @staticmethod
+    def aggregate_words_v2(words, min_doc_freq=30):
+        # 第一步：统计文档频率
+        doc_freq_set = defaultdict(set)
+
+        for entry in words:
+            word = entry['word']
+            doc_id = entry['doc_id']
+            doc_freq_set[word].add(doc_id)
+
+        # 过滤出文档频率大于等于 min_doc_freq 的词
+        filtered_words = {word: freq for word, freq in doc_freq_set.items() if len(freq) >= min_doc_freq}
+
+        # 第二步：统计词频和其他字段
+        aggregated = defaultdict(lambda: {
+            'term_freq': 0,
+            'doc_freq': 0,
+            'status': 0,
+            'left_chars': Counter(),
+            'right_chars': Counter()
+        })
+
+        for entry in words:
+            word = entry['word']
+            if word in filtered_words:
+                doc_id = entry['doc_id']
+                left_char = entry['left_char']
+                right_char = entry['right_char']
+
+                # 更新词频
+                aggregated[word]['term_freq'] += 1
+
+                # 更新左侧字符频率
+                aggregated[word]['left_chars'][left_char] += 1
+
+                # 更新右侧字符频率
+                aggregated[word]['right_chars'][right_char] += 1
+
+        # 计算文档频率
+        for word in aggregated:
+            aggregated[word]['doc_freq'] = len(doc_freq_set[word])
+
+        # 将字符频率字典转换为列表
+        for word in aggregated:
+            aggregated[word]['left_chars'] = [{'char': char, 'freq': freq} for char, freq in
+                                              aggregated[word]['left_chars'].items()]
+            aggregated[word]['right_chars'] = [{'char': char, 'freq': freq} for char, freq in
+                                               aggregated[word]['right_chars'].items()]
 
         # 转换为普通字典
         aggregated = {word: dict(stats) for word, stats in aggregated.items()}

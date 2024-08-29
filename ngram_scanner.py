@@ -12,7 +12,7 @@ from word_splitter.word_cutter import WordCutter
 warnings.filterwarnings("ignore")
 
 CONFIG_FILE = 'config/config.yaml'
-INPUT_FILE = 'input/random_user_10w.csv'
+INPUT_FILE = 'input/random_user_20W_0829.csv'
 
 from pandarallel import pandarallel
 
@@ -29,12 +29,12 @@ class NgramScanner:
     @staticmethod
     def preprocess():
         df = pd.read_csv(INPUT_FILE)
-        df.dropna(subset=['final_content'], inplace=True)
+        df.dropna(subset=['content'], inplace=True)
         # df = df[:100]
         return df
 
     def cut_words(self, df):
-        df['words'] = df['final_content'].apply(
+        df['words'] = df['content'].apply(
             lambda x: self.wc.cut(''.join(utils.split_into_phrases(x, self.blacklist))))
         return df
 
@@ -175,6 +175,7 @@ class NgramScanner:
 
 if __name__ == '__main__':
     scanner = NgramScanner()
+    s = time.time()
     start = time.time()
     df = scanner.preprocess()
     print('\npreprocess cost time:', time.time() - start)
@@ -206,9 +207,10 @@ if __name__ == '__main__':
     ngram_dict = ngrams.to_dict(orient='records')
 
     print('\nexplode cost time:', time.time() - start)
-    processed_data = [item['ngrams'] for item in ngrams]
+    processed_data = [item['ngrams'] for item in ngram_dict]
 
     result = ngram_stat.aggregate_words(processed_data, 30)
     print('\naggregate_words cost time:', time.time() - start)
     ngram_stat.save_to_csv(result)
     print('\nsave_to_csv cost time:', time.time() - start)
+    print('total cost time:', time.time() - s)
