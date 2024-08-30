@@ -96,7 +96,7 @@ class CorpusScanner(ConfigLoader):
 
                 # print('left context:', left_context)
 
-                result_dict = {'word': word, 'pos': pos, 'left_context': left_context, 'right_context': right_context, 'doc_id': doc_id}
+                result_dict = {'char': word, 'pos': pos, 'left_context': left_context, 'right_context': right_context, 'doc_id': doc_id}
                 scan_result.append(result_dict)
 
         return scan_result
