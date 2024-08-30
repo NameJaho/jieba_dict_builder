@@ -19,3 +19,5 @@ OUTPUT_FILE_PATH:
   entropy_result: './output/entropy_result.csv'
   mi_result: './output/mi_result.csv'
   final_result: './output/final_result.csv'
+INPUT_FILE_PATH:
+  input_file: './input/random_user_20W_0829.csv'
