@@ -1,13 +1,15 @@
 BLACKLIST:
   word: ['是', '我']
   pos: ['u*', 'x', 'y', 'z', 's', 'r*', 'q', 'p', 'o', 'k', 'h', 'd', 'c']
+
 WORD_LENGTH:
   min_len: 2
   max_len: 5
 
-VALIDATION:
-  doc_freq_threshold: 3
-  term_freq_threshold: 8
+FILTER:
+  doc_freq_threshold: 30
+  entropy_threshold: 1.5
+  mi_threshold: -4.5
 
 OUTPUT_FILE_PATH:
   char_freq: './output/char_freq.csv'
