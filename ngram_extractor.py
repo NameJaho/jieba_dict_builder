@@ -3,9 +3,10 @@ import pandas as pd
 from pandarallel import pandarallel
 import warnings
 from config.config_loader import ConfigLoader
+import json
 
 warnings.filterwarnings("ignore")
-#pandarallel.initialize()
+# pandarallel.initialize()
 
 
 class NgramExtractor(ConfigLoader):
@@ -55,8 +56,13 @@ class NgramExtractor(ConfigLoader):
             ngrams = self.generate_ngrams(char, left_context, right_context)
             results = []
             for ngram in ngrams:
-                #print(ngram)
-                results.append([ngram['ngram'], ngram['left_char'], ngram['right_char'], doc_id])
+                result_dict = {
+                    'term': ngram['ngram'],
+                    'left_char': ngram['left_char'],
+                    'right_char': ngram['right_char'],
+                    'doc_id': doc_id
+                }
+                results.append(str(result_dict))
             return results
         return []
 
@@ -67,17 +73,16 @@ class NgramExtractor(ConfigLoader):
         return results
 
     def save_to_csv(self, results):
-        with open(self.output_file_path.ngrams, mode='w', encoding='utf-8', newline='') as outfile:
-            writer = csv.writer(outfile)
-            writer.writerow(['term', 'left_char', 'right_char', 'doc_id'])
+        all_results = []
+        for result in results:
+            if result:
+                all_results.extend(result)
 
-            for result in results:
-                if result:
-                    writer.writerows(result)
+        result_df = pd.DataFrame(all_results, columns=['ngram'])
+        result_df.to_csv(self.output_file_path.ngrams, index=False)
 
 
 if __name__ == '__main__':
     ngram_extractor = NgramExtractor()
     _results = ngram_extractor.build_ngrams()
     ngram_extractor.save_to_csv(_results)
-
