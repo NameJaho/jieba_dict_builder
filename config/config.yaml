@@ -8,3 +8,12 @@ WORD_LENGTH:
 VALIDATION:
   doc_freq_threshold: 3
   term_freq_threshold: 8
+
+OUTPUT_FILE_PATH:
+  char_freq: './output/char_freq.csv'
+  scan_result: './output/scan_result.csv'
+  ngrams: './output/ngrams.csv'
+  merged_ngrams: './output/merged_ngrams.csv'
+  entropy_result: './output/entropy_result.csv'
+  mi_result: './output/mi_result.csv'
+  final_result: './output/final_result.csv'
