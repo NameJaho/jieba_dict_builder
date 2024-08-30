@@ -17,9 +17,10 @@ class WordLength:
 
 
 @dataclass
-class Validation:
+class Filter:
     doc_freq_threshold: int = 0
-    term_freq_threshold: int = 0
+    entropy_threshold: float = 0.0
+    mi_threshold: float = 0.0
 
 
 @dataclass
@@ -46,7 +47,7 @@ class ConfigLoader:
 
         self.blacklist = Blacklist(**config_data.get('BLACKLIST', {}))
         self.word_length = WordLength(**config_data.get('WORD_LENGTH', {}))
-        self.validation = Validation(**config_data.get('VALIDATION', ''))
+        self.filter = Filter(**config_data.get('FILTER', ''))
         self.output_file_path = OutputFile(**config_data.get('OUTPUT_FILE_PATH', ''))
         self.intput_file_path = InputFile(**config_data.get('INPUT_FILE_PATH', ''))
 
@@ -58,5 +59,5 @@ if __name__ == "__main__":
     print(config.blacklist.pos)  # 访问黑名单列表
     print(config.word_length.min_len)  # 访问单词长度的最小值
     print(config.word_length.max_len)  # 访问单词长度的最大值
-    print(config.validation.doc_freq_threshold)  # 访问文档频率阈值
+    print(config.filter.doc_freq_threshold)  # 访问文档频率阈值
     print(config.output_file_path.scan_result)

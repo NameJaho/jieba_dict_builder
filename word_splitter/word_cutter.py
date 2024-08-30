@@ -14,7 +14,8 @@ class WordCutter:
         words = jieba.lcut(text)
         return words
 
-    def pseg(self, text):
+    @staticmethod
+    def pos_seg(text):
         words = pseg.cut(text)
         return [[word, flags] for word, flags in words]
 
