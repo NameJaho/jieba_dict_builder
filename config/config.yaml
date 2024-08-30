@@ -8,3 +8,7 @@ WORD_LENGTH:
 VALIDATION:
   doc_freq_threshold: 3
   term_freq_threshold: 8
+
+FILENAME:
+  input_file: input/random_user_20W_0829.csv
+  scan_result : output/scan_result.csv
