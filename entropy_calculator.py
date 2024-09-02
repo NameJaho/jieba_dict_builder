@@ -1,25 +1,12 @@
 import math
 from collections import defaultdict
-import csv
-
+from config.config_loader import ConfigLoader
 import pandas as pd
 
-import utils
-import csv
-import json
 
-CONFIG_FILE = 'config/config.yaml'
-CHAR_FREQ_FILE = 'output/char_freq.csv'
-WORD_FREQ_FILE = 'output/word_freq.csv'
-
-
-class EntropyCalculator:
+class EntropyCalculator(ConfigLoader):
     def __init__(self):
-        config = utils.load_config(CONFIG_FILE)
-        self.blacklist = config['BLACKLIST']
-
-    def is_in_blacklist(self, term):
-        return any(char in self.blacklist for char in term)
+        super().__init__()
 
     @staticmethod
     def calculate_single_entropy(neighbors):
@@ -48,93 +35,54 @@ class EntropyCalculator:
 
         # 计算左熵
         left_entropy = self.calculate_single_entropy(left_neighbors)
-        # print(left_entropy)
         # 计算右熵
         right_entropy = self.calculate_single_entropy(right_neighbors)
-        # print(right_entropy)
 
-        entropy = (left_entropy + right_entropy) / 2
         if left_entropy < 0.2 or right_entropy < 0.2:
-            entropy = 1
+            entropy = 0.5
+        else:
+            entropy = (left_entropy + right_entropy) / 2
+
         # 返回左右熵的平均值
         return entropy
 
-    def find_char_frequency(self, char):
-        df = pd.read_csv(CHAR_FREQ_FILE)
-        # 找到对应的词频
-        frequency = df.loc[df['single_char'] == char, 'count'].iloc[0] if char in df['single_char'].values else 0
-        return frequency
+    def is_in_blacklist(self, term):
+        pass
 
-    def find_word_frequency(self, word):
-        df = pd.read_csv(WORD_FREQ_FILE)
-        # 找到所有包含输入词的词频之和
-        frequency = df[df['ngram'].str.contains(word, regex=False)]['count'].sum()
-        return frequency
+    def filter_by_entropy(self, df):
+        results = []
+        # iterate df
+        for index, row in df.iterrows():
+            term = row['term']
+            term_freq = row['term_freq']
+            doc_freq = row['doc_freq']
+            left_chars = eval(row['left_chars'])
+            right_chars = eval(row['right_chars'])
 
-    def calculate_mutual_information(self, term):
-        term_freq = self.find_word_frequency(term)
+            # if self.is_in_blacklist(term):
+            #     continue
+            entropy = self.calculate_entropy(left_chars, right_chars)
+            if entropy < 1.5:
+                continue
 
-        # 获取词的每个字符
-        chars = list(term)
+            result_dict = {
+                'term': term,
+                'term_freq': term_freq,
+                'doc_freq': doc_freq,
+                'entropy': entropy
+            }
+            results.append(result_dict)
+        return results
 
-        # 计算总频率
-        total_freq = term_freq
-        char_freqs = {}
-
-        # 获取每个字符的全局词频
-        for char in chars:
-            char_freq = self.find_char_frequency(char)
-            if char_freq is not None:
-                char_freqs[char] = char_freq
-                total_freq += char_freq
-
-        if total_freq == 0 or term_freq == 0:
-            return 0
-
-        # 计算概率
-        p_term = term_freq / total_freq
-        p_chars = {char: freq / total_freq for char, freq in char_freqs.items()}
-
-        # 计算互信息 判断凝固度
-        mi = math.log(p_term / math.prod(p_chars.values()), 2)
-
-        # print(f"Mutual information for term '{term}': {mi}")
-        return mi
+    def save_to_csv(self, results):
+        result_df = pd.DataFrame(results, columns=['term', 'term_freq', 'doc_freq', 'entropy'])
+        result_df.to_csv(self.output_file_path.entropy, index=False)
 
 
 if __name__ == '__main__':
     entropy_calculator = EntropyCalculator()
-    entropy_results = []
+    df = pd.read_csv(entropy_calculator.output_file_path.merged_ngrams)
+    _results = entropy_calculator.filter_by_entropy(df)
+    entropy_calculator.save_to_csv(_results)
 
-    with open('output/terms_data.csv', mode='r', encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            term = row['term']
-            term_freq = int(row['term_freq'])
-            left_chars = eval(row['left_chars'])
-            right_chars = eval(row['right_chars'])
-            if term == '北京':
-                print(term_freq)
-                print(left_chars)
-                print(right_chars)
 
-            if entropy_calculator.is_in_blacklist(term):
-                continue
-
-            entropy = entropy_calculator.calculate_entropy(left_chars, right_chars)
-            if entropy < 1.5 or len(term.strip()) <= 1:
-                continue
-
-            mi = entropy_calculator.calculate_mutual_information(term)
-
-            if mi > -4.5:
-                print(f'term: {term}, entropy: {entropy}, mi: {mi}')
-                entropy_results.append({'term': term, 'entropy': entropy, 'mi': mi})
-
-    # 将结果保存到新的CSV文件
-    with open('output/final_words.csv', mode='w', encoding='utf-8', newline='') as file:
-        fieldnames = ['term', 'entropy', 'mi']
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-        for result in entropy_results:
-            writer.writerow(result)
