@@ -11,7 +11,7 @@ class NgramScanner(ConfigLoader):
     @cost_time
     def __init__(self):
         super().__init__()
-        ngrams_list = pickle.load(open('.output/ngrams_dict.pkl', 'rb'))
+        ngrams_list = pickle.load(open('./output/ngrams_dict.pkl', 'rb'))
         ngrams_list = [ngram for ngram in ngrams_list if ngram['doc_freq'] > 30]
         print(len(ngrams_list))
         self.ngrams_dict = {item['term']: {'term_freq': item['term_freq'], 'doc_freq': item['doc_freq']} for item in ngrams_list}
@@ -88,4 +88,4 @@ if __name__ == '__main__':
     ngram_scanner = NgramScanner()
     result = ngram_scanner.scan_to_dict()
     print(len(result))
-    pickle.dump(result, open('.output/neighbour_dict.pkl', 'wb'))
+    pickle.dump(result, open('./output/neighbour_dict.pkl', 'wb'))

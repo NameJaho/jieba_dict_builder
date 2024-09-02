@@ -8,7 +8,7 @@ import utils
 import csv
 
 
-CONFIG_FILE = 'config/config.yaml'
+CONFIG_FILE = '../config/config.yaml'
 
 
 class EntropyCalculator:

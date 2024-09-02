@@ -13,8 +13,8 @@ from word_splitter.word_cutter import WordCutter
 
 warnings.filterwarnings("ignore")
 
-CONFIG_FILE = 'config/config.yaml'
-INPUT_FILE = 'input/random_user_20W_0829.csv'
+CONFIG_FILE = '../config/config.yaml'
+INPUT_FILE = '../input/random_user_20W_0829.csv'
 
 from pandarallel import pandarallel
 

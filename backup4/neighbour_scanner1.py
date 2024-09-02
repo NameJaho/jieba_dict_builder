@@ -9,7 +9,7 @@ from utils import cost_time
 class NgramScanner(ConfigLoader):
     def __init__(self):
         super().__init__()
-        self.ngrams_dict = pickle.load(open('./ngrams.pkl', 'rb'))
+        self.ngrams_dict = pickle.load(open('../ngrams.pkl', 'rb'))
         self.neighbour_dict = defaultdict(lambda: {'term_freq': 0, 'doc_freq': 0, 'left_chars': Counter(), 'right_chars': Counter()})
 
     @staticmethod
@@ -81,4 +81,4 @@ if __name__ == '__main__':
     text = '今天天气真好 明天也不错'
 
     result = ngram_scanner.scan_to_dict()
-    pickle.dump(result, open('neighbour_dict.pkl', 'wb'))
+    pickle.dump(result, open('../neighbour_dict.pkl', 'wb'))

@@ -2,6 +2,7 @@ import math
 import pickle
 from collections import defaultdict
 from config.config_loader import ConfigLoader
+from utils import cost_time
 
 
 class EntropyCalculator(ConfigLoader):
@@ -49,6 +50,7 @@ class EntropyCalculator(ConfigLoader):
     def is_in_blacklist(self, term):
         pass
 
+    @cost_time
     def filter_by_entropy(self, data):
         results = []
         # iterate data
@@ -82,7 +84,7 @@ class EntropyCalculator(ConfigLoader):
 
 if __name__ == '__main__':
     entropy_calculator = EntropyCalculator()
-    with open('./neighbour_dict.pkl', 'rb') as f:
+    with open('./output/neighbour_dict.pkl', 'rb') as f:
         data = pickle.load(f)
     _results = entropy_calculator.filter_by_entropy(data)
     entropy_calculator.save_to_csv(_results)

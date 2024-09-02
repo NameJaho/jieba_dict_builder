@@ -5,7 +5,7 @@ import utils
 from ngrams_freq_stat import NgramsFreqStat
 from utils import cost_time
 
-from entropy_calculator1 import EntropyCalculator
+from backup4.entropy_calculator1 import EntropyCalculator
 from mi_calculator import MICalculator
 
 CONFIG_FILE = 'config/config.yaml'
