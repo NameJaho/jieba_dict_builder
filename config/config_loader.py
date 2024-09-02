@@ -26,6 +26,7 @@ class Filter:
 @dataclass
 class OutputFile:
     char_freq: str = ''
+    word_freq: str = ''
     scan_result: str = ''
     ngrams: str = ''
     merged_ngrams: str = ''
@@ -61,3 +62,4 @@ if __name__ == "__main__":
     print(config.word_length.max_len)  # 访问单词长度的最大值
     print(config.filter.doc_freq_threshold)  # 访问文档频率阈值
     print(config.output_file_path.scan_result)
+    print(config.output_file_path.word_freq)

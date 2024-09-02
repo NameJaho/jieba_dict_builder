@@ -2,27 +2,23 @@ import utils
 import pandas as pd
 import math
 
-CONFIG_FILE = 'config/config.yaml'
-CHAR_FREQ_FILE = 'output/char_freq.csv'
-WORD_FREQ_FILE = 'output/word_freq.csv'
-ENTROPY_CHAR_FREQ_FILE = 'output/char_freq_entropy.csv'
+from config.config_loader import ConfigLoader
 
 
-class MICalculator:
+class MICalculator(ConfigLoader):
     def __init__(self):
-        config = utils.load_config(CONFIG_FILE)
-        self.blacklist = config['BLACKLIST']
+        super().__init__()
 
     def find_char_frequency(self, char):
-        df = pd.read_csv(CHAR_FREQ_FILE)
+        df = pd.read_csv(self.output_file_path.char_freq)
         # 找到对应的词频
-        frequency = df.loc[df['single_char'] == char, 'count'].iloc[0] if char in df['single_char'].values else 0
+        frequency = df.loc[df['word'] == char, 'count'].iloc[0] if char in df['word'].values else 0
         return frequency
 
     def find_word_frequency(self, word):
-        df = pd.read_csv(WORD_FREQ_FILE)
+        df = pd.read_csv(self.output_file_path.word_freq)
         # 找到所有包含输入词的词频之和
-        frequency = df[df['term'].str.contains(word, regex=False)]['term_freq'].sum()
+        frequency = df.loc[df['word'] == word, 'count'].iloc[0] if word in df['word'].values else 0
         return frequency
 
     def calculate_mutual_information(self, term):
@@ -43,7 +39,7 @@ class MICalculator:
                 total_freq += char_freq
 
         if total_freq == 0 or term_freq == 0:
-            return 0
+            return 0, term_freq
 
         # 计算概率
         p_term = term_freq / total_freq
@@ -53,4 +49,25 @@ class MICalculator:
         mi = math.log(p_term / math.prod(p_chars.values()), 2)
 
         # print(f"Mutual information for term '{term}': {mi}")
-        return mi
+        print(term, term_freq, mi)
+        return mi, term_freq
+
+    def filter_by_mi(self, df):
+        for index, row in df.iterrows():
+            term = row['term']
+            mi, global_term_freq = self.calculate_mutual_information(term)
+            df.at[index, 'mi'] = mi
+            df.at[index, 'global_term_freq'] = global_term_freq
+        return df
+
+    def save_to_csv(self, df):
+        df.to_csv(self.output_file_path.mi_result, index=False)
+
+
+if __name__ == '__main__':
+    mi_calculator = MICalculator()
+    _df = pd.read_csv(mi_calculator.output_file_path.entropy_result)
+    _results = mi_calculator.filter_by_mi(_df)
+    mi_calculator.save_to_csv(_results)
+
+    #print(mi_calculator.find_word_frequency('0天'))

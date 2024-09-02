@@ -13,6 +13,7 @@ FILTER:
 
 OUTPUT_FILE_PATH:
   char_freq: './output/char_freq.csv'
+  word_freq: './output/word_freq.csv'
   scan_result: './output/scan_result.csv'
   ngrams: './output/ngrams.csv'
   merged_ngrams: './output/merged_ngrams.csv'
