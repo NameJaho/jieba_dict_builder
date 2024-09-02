@@ -20,16 +20,12 @@ class EntropyCalculator(ConfigLoader):
         right_neighbors = defaultdict(int)
 
         # 遍历左邻字
-        for char_info in left_chars:
-            char = char_info['char']
-            freq = char_info['freq']
+        for char, freq in left_chars.items():
             if char:  # 检查字符是否为空
                 left_neighbors[char] += freq
 
         # 遍历右邻字
-        for char_info in right_chars:
-            char = char_info['char']
-            freq = char_info['freq']
+        for char, freq in right_chars.items():
             if char:  # 检查字符是否为空
                 right_neighbors[char] += freq
 
@@ -76,7 +72,7 @@ class EntropyCalculator(ConfigLoader):
 
     def save_to_csv(self, results):
         result_df = pd.DataFrame(results, columns=['term', 'term_freq', 'doc_freq', 'entropy'])
-        result_df.to_csv(self.output_file_path.entropy, index=False)
+        result_df.to_csv(self.output_file_path.entropy_result, index=False)
 
 
 if __name__ == '__main__':
@@ -84,5 +80,3 @@ if __name__ == '__main__':
     df = pd.read_csv(entropy_calculator.output_file_path.merged_ngrams)
     _results = entropy_calculator.filter_by_entropy(df)
     entropy_calculator.save_to_csv(_results)
-
-

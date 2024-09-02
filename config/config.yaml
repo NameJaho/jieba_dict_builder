@@ -1,5 +1,5 @@
 BLACKLIST:
-  char: ['是', '我']
+  word: ['是', '我']
   pos: ['u*', 'x', 'y', 'z', 's', 'r*', 'q', 'p', 'o', 'k', 'h', 'd', 'c']
 
 WORD_LENGTH:
