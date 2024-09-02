@@ -15,12 +15,6 @@ class MICalculator(ConfigLoader):
         frequency = df.loc[df['word'] == char, 'count'].iloc[0] if char in df['word'].values else 0
         return frequency
 
-    def find_word_frequency(self, word):
-        df = pd.read_csv(self.output_file_path.word_freq)
-        # 找到所有包含输入词的词频之和
-        frequency = df.loc[df['word'] == word, 'count'].iloc[0] if word in df['word'].values else 0
-        return frequency
-
     def calculate_mutual_information(self, term):
         term_freq = self.find_word_frequency(term)
 
@@ -66,8 +60,9 @@ class MICalculator(ConfigLoader):
 
 if __name__ == '__main__':
     mi_calculator = MICalculator()
-    _df = pd.read_csv(mi_calculator.output_file_path.entropy_result)
-    _results = mi_calculator.filter_by_mi(_df)
-    mi_calculator.save_to_csv(_results)
+    # _df = pd.read_csv(mi_calculator.output_file_path.entropy_result)
+    # _results = mi_calculator.filter_by_mi(_df)
+    # mi_calculator.save_to_csv(_results)
 
-    #print(mi_calculator.find_word_frequency('0天'))
+    df = pd.read_csv(mi_calculator.output_file_path.merged_ngrams)
+    print(len(df))
