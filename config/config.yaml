@@ -10,6 +10,8 @@ FILTER:
   doc_freq_threshold: 30
   entropy_threshold: 1.5
   mi_threshold: -4.5
+  bad_words: ['是', '我', '的', '了', '非常', '而且', '很', '最', '们', '还', '和', '让', '您', '就', '或', '并', '怎', '呀',
+              '这','有','再','在','又','呢','也','一下','可以','没','多','一定','个','你']
 
 OUTPUT_FILE_PATH:
   char_freq: './output/char_freq.csv'

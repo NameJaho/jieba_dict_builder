@@ -1,6 +1,10 @@
 import pandas as pd
 import math
 from config.config_loader import ConfigLoader
+from pandarallel import pandarallel
+from utils import cost_time
+
+pandarallel.initialize(progress_bar=True, verbose=2)
 
 
 class MICalculator(ConfigLoader):
@@ -34,17 +38,14 @@ class MICalculator(ConfigLoader):
         # 计算概率
         p_term = term_freq / total_freq
         p_chars = {char: freq / total_freq for char, freq in char_freq_dict.items()}
-        print(p_chars)
+        #print(p_chars)
         # 计算互信息 判断凝固度
         mi = math.log(p_term / math.prod(p_chars.values()), 2)
         return mi
 
+    @cost_time
     def filter_by_mi(self, df):
-        for index, row in df.iterrows():
-            term = row['term']
-            term_freq = row['term_freq']
-            mi = self.calculate_mutual_information(term, term_freq)
-            df.at[index, 'mi'] = mi
+        df['mi'] = df.parallel_apply(lambda row: self.calculate_mutual_information(row['term'], row['term_freq']), axis=1)
         return df
 
     def save_to_csv(self, df):
@@ -54,6 +55,7 @@ class MICalculator(ConfigLoader):
 if __name__ == '__main__':
     mi_calculator = MICalculator()
     _df = pd.read_csv(mi_calculator.output_file_path.entropy_result)
+    _df.dropna(inplace=True)
     print(len(_df))
     _results = mi_calculator.filter_by_mi(_df)
     mi_calculator.save_to_csv(_results)

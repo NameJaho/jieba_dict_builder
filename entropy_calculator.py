@@ -1,4 +1,5 @@
 import math
+import re
 import pickle
 from collections import defaultdict
 from config.config_loader import ConfigLoader
@@ -47,8 +48,17 @@ class EntropyCalculator(ConfigLoader):
         # 返回左右熵的平均值
         return entropy
 
-    def is_in_blacklist(self, term):
-        pass
+    def contains_bad_word(self, word):
+        for bad_word in self.filter.bad_words:
+            if bad_word in word:
+                return True
+            # 检查是否包含英文字母
+        if re.search(r'[a-zA-Z]', word):
+            return True
+            # 检查是否包含数字
+        if re.search(r'\d', word):
+            return True
+        return False
 
     @cost_time
     def filter_by_entropy(self, data):
@@ -61,8 +71,9 @@ class EntropyCalculator(ConfigLoader):
             left_chars = item['left_chars']
             right_chars = item['right_chars']
 
-            # if self.is_in_blacklist(term):
-            #     continue
+            if self.contains_bad_word(term):
+                continue
+
             entropy = self.calculate_entropy(left_chars, right_chars)
             if entropy < 1.5:
                 continue
@@ -86,5 +97,7 @@ if __name__ == '__main__':
     entropy_calculator = EntropyCalculator()
     with open('./output/neighbour_dict.pkl', 'rb') as f:
         data = pickle.load(f)
+    print(len(data))
     _results = entropy_calculator.filter_by_entropy(data)
+    print(len(_results))
     entropy_calculator.save_to_csv(_results)
