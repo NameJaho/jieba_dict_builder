@@ -75,7 +75,8 @@ class EntropyCalculator(ConfigLoader):
                 continue
 
             entropy, left_entropy, right_entropy = self.calculate_entropy(left_chars, right_chars)
-            if left_entropy < 2 or right_entropy < 2:
+            entropy_threshold = self.filter.entropy_threshold
+            if left_entropy < entropy_threshold or right_entropy < entropy_threshold:
                 continue
 
             result_dict = {
