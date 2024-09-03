@@ -46,7 +46,7 @@ class EntropyCalculator(ConfigLoader):
         entropy = (left_entropy + right_entropy) / 2
 
         # 返回左右熵的平均值
-        return entropy
+        return entropy, left_entropy, right_entropy
 
     def contains_bad_word(self, word):
         for bad_word in self.filter.bad_words:
@@ -74,22 +74,24 @@ class EntropyCalculator(ConfigLoader):
             if self.contains_bad_word(term):
                 continue
 
-            entropy = self.calculate_entropy(left_chars, right_chars)
-            if entropy < 1.5:
+            entropy, left_entropy, right_entropy = self.calculate_entropy(left_chars, right_chars)
+            if left_entropy < 2 or right_entropy < 2:
                 continue
 
             result_dict = {
                 'term': term,
                 'term_freq': term_freq,
                 'doc_freq': doc_freq,
-                'entropy': entropy
+                'entropy': entropy,
+                'left_entropy': left_entropy,
+                'right_entropy': right_entropy
             }
             results.append(result_dict)
         return results
 
     def save_to_csv(self, results):
         import pandas as pd
-        result_df = pd.DataFrame(results, columns=['term', 'term_freq', 'doc_freq', 'entropy'])
+        result_df = pd.DataFrame(results, columns=['term', 'term_freq', 'doc_freq', 'entropy', 'left_entropy', 'right_entropy'])
         result_df.to_csv(self.output_file_path.entropy_result, index=False)
 
 

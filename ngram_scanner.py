@@ -67,6 +67,9 @@ class NgramScanner(ConfigLoader):
 if __name__ == '__main__':
     ngram_scanner = NgramScanner()
 
-    result = ngram_scanner.scan_to_dict()
-    print(len(result))
-    pickle.dump(result, open('./output/ngrams_dict.pkl', 'wb'))
+    # result = ngram_scanner.scan_to_dict()
+    # print(len(result))
+    # pickle.dump(result, open('./output/ngrams_dict.pkl', 'wb'))
+
+    ngrams_dict = pickle.load(open('./output/ngrams_dict.pkl', 'rb'))
+    print(ngrams_dict[10:20])
