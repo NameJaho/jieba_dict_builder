@@ -98,7 +98,7 @@ class EntropyCalculator(ConfigLoader):
 
 if __name__ == '__main__':
     entropy_calculator = EntropyCalculator()
-    with open('./output/neighbour_dict.pkl', 'rb') as f:
+    with open('output/neighbours_dict.pkl', 'rb') as f:
         data = pickle.load(f)
     print(len(data))
     _results = entropy_calculator.filter_by_entropy(data)

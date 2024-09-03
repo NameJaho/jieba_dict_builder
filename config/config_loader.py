@@ -26,14 +26,11 @@ class Filter:
 
 @dataclass
 class OutputFile:
-    char_freq: str = ''
-    word_freq: str = ''
-    scan_result: str = ''
-    ngrams: str = ''
-    merged_ngrams: str = ''
+    ngrams_dict: str = ''
+    neighbours_dict: str = ''
     entropy_result: str = ''
+    char_freq: str = ''
     mi_result: str = ''
-    final_result: str = ''
 
 
 @dataclass

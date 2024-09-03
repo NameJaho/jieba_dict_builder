@@ -1,86 +1,60 @@
-# import polars as pl
 import pandas as pd
-import utils
-
-from ngrams_freq_stat import NgramsFreqStat
 from utils import cost_time
-
-from backup4.entropy_calculator1 import EntropyCalculator
+from ngram_scanner import NgramScanner
+from neighbour_scanner import NeighbourScanner
+from entropy_calculator import EntropyCalculator
+from char_freq_counter import KeywordCounter
 from mi_calculator import MICalculator
-
-CONFIG_FILE = 'config/config.yaml'
-TERMS_FILE = 'output/terms_data.csv'
-ENTROPY_RESULT_FILE = 'output/entropy_result_diff_jieba.csv'
-FINAL_RESULT_FILE = 'output/final_result.csv'
-ENTROPY_CHAR_FREQ_FILE = 'output/char_freq.csv'
+from config.config_loader import ConfigLoader
+from loguru import logger
+import pickle
 
 
-class WordDiscoverer:
+class WordDiscoverer(ConfigLoader):
     def __init__(self):
-        config = utils.load_config(CONFIG_FILE)
-        self.blacklist = config['BLACKLIST']
+        super().__init__()
+        self.ngram_scanner = NgramScanner()
+        self.neighbour_scanner = NeighbourScanner()
         self.entropy_calculator = EntropyCalculator()
+        self.char_freq_counter = KeywordCounter()
         self.mi_calculator = MICalculator()
 
-    def is_in_blacklist(self, term):
-        return any(char in self.blacklist for char in term)
-
     @cost_time
-    def filter_with_entropy(self):
-        entropy_results = []
-        df = pd.read_csv(TERMS_FILE)
+    def process(self):
+        # Step 1: processing ngrams
+        logger.info('Scanning ngrams...')
+        ngrams_dict = self.ngram_scanner.scan_to_dict()
+        #pickle.dump(ngrams_dict, open(self.output_file_path.ngrams_dict, 'wb'))
+        logger.info(f'Generated {len(ngrams_dict)} ngrams...')
 
-        for index, row in df.iterrows():
-            term = row['term']
-            term_freq = row['term_freq']
-            doc_freq = row['doc_freq']
-            left_chars = eval(row['left_chars'])
-            right_chars = eval(row['right_chars'])
+        # Step 2: processing left chars and right chars
+        logger.info('Scanning neighbours...')
+        neighbours_dict = self.neighbour_scanner.scan_to_dict(ngrams_dict)
+        # pickle.dump(neighbours_dict, open(self.output_file_path.neighbours_dict, 'wb'))
+        logger.info(f'Generated {len(neighbours_dict)} neighbours...')
 
-            if self.is_in_blacklist(term):
-                continue
+        # Step 3: calculate entropy
+        logger.info('Calculating entropy...')
+        # entropy_input = pickle.load(open(self.output_file_path.neighbours_dict, 'rb'))
+        entropy_results = self.entropy_calculator.filter_by_entropy(neighbours_dict)
+        self.entropy_calculator.save_to_csv(entropy_results)
+        logger.info(f'Filtered {len(entropy_results)} ngrams with entropy > {self.filter.entropy_threshold}...')
 
-            entropy = self.entropy_calculator.calculate_entropy(left_chars, right_chars)
+        # Step 4: calculate char freq
+        logger.info('Calculating char freq...')
+        self.char_freq_counter.run()
 
-            if entropy >= 1.5 and len(term.strip()) > 1:
-                entropy_results.append({'term': term, 'term_freq': term_freq, 'doc_freq': doc_freq})
-
-        return entropy_results
-
-    @cost_time
-    def save_entropy_results(self):
-        entropy_results = self.filter_with_entropy()
-        df = pd.DataFrame(entropy_results)
-        df.to_csv(ENTROPY_RESULT_FILE)
-        return df
-
-    @cost_time
-    def filter_with_mi(self):
-        mi_results = []
-        df = pd.read_csv(ENTROPY_RESULT_FILE)
-
-        for index, row in df.iterrows():
-            term = row['term']
-            term_freq = row['term_freq']
-            doc_freq = row['doc_freq']
-            mi = self.mi_calculator.calculate_mutual_information(term)
-            if mi > -4.5:
-                mi_results.append({'term': term, 'term_freq': term_freq, 'doc_freq': doc_freq})
-
-        return mi_results
-
-    @cost_time
-    def save_mi_results(self):
-        mi_results = self.filter_with_mi()
-        df = pd.DataFrame(mi_results)
-        df.to_csv(FINAL_RESULT_FILE)
+        # Step 5: calculate mi
+        logger.info('Calculating mi...')
+        entropy_df = pd.DataFrame(entropy_results,
+                                 columns=['term', 'term_freq', 'doc_freq', 'entropy', 'left_entropy', 'right_entropy'])
+        entropy_df.dropna(inplace=True)
+        mi_results = self.mi_calculator.filter_by_mi(entropy_df)
+        self.mi_calculator.save_to_csv(mi_results)
+        logger.info('Process completed...')
 
 
 if __name__ == '__main__':
     word_discoverer = WordDiscoverer()
-    stat = NgramsFreqStat()
+    word_discoverer.process()
 
-    df = word_discoverer.save_entropy_results()
-    stat.save_char_freq()
-
-    word_discoverer.save_mi_results()

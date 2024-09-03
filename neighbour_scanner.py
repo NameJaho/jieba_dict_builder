@@ -7,14 +7,11 @@ from utils import cost_time
 import pickle
 
 
-class NgramScanner(ConfigLoader):
+class NeighbourScanner(ConfigLoader):
     def __init__(self):
         super().__init__()
-        ngrams_list = pickle.load(open('./output/ngrams_dict.pkl', 'rb'))
-        ngrams_list = [ngram for ngram in ngrams_list if ngram['doc_freq'] > self.filter.doc_freq_threshold]
-
-        self.ngrams_dict = {item['term']: {'term_freq': item['term_freq'], 'doc_freq': item['doc_freq']} for item in ngrams_list}
-        self.neighbour_dict = defaultdict(
+        self.ngrams_dict = None
+        self.neighbours_dict = defaultdict(
             lambda: {'term_freq': 0, 'doc_freq': 0, 'left_chars': Counter(), 'right_chars': Counter()})
 
     @staticmethod
@@ -48,18 +45,28 @@ class NgramScanner(ConfigLoader):
             for ngram, pos in ngrams:
                 term_item = self.find_term_in_dict(ngram)
                 if term_item is not None:
-                    self.neighbour_dict[ngram]['term_freq'] = term_item['term_freq']
-                    self.neighbour_dict[ngram]['doc_freq'] = term_item['doc_freq']
+                    self.neighbours_dict[ngram]['term_freq'] = term_item['term_freq']
+                    self.neighbours_dict[ngram]['doc_freq'] = term_item['doc_freq']
+
                     # 获取左右邻字
                     if pos > 0 and cleaned_content[pos - 1] != ' ':
                         left_char = cleaned_content[pos - 1]
-                        self.neighbour_dict[ngram]['left_chars'][left_char] += 1
+                        self.neighbours_dict[ngram]['left_chars'][left_char] += 1
                     if pos + n < len(cleaned_content) and cleaned_content[pos + n] != ' ':
                         right_char = cleaned_content[pos + n]
-                        self.neighbour_dict[ngram]['right_chars'][right_char] += 1
+                        self.neighbours_dict[ngram]['right_chars'][right_char] += 1
 
     @cost_time
-    def scan_to_dict(self):
+    def scan_to_dict(self, ngrams_dict=None):
+        if ngrams_dict is None:
+            input_data = pickle.load(open(self.output_file_path.ngrams_dict, 'rb'))
+        else:
+            input_data = ngrams_dict
+
+        ngrams_list = [ngram for ngram in input_data if ngram['doc_freq'] > self.filter.doc_freq_threshold]
+        self.ngrams_dict = {item['term']: {'term_freq': item['term_freq'], 'doc_freq': item['doc_freq']} for item in
+                            ngrams_list}
+
         df = pd.read_csv(self.input_file_path.input_file)
 
         with ThreadPoolExecutor() as executor:
@@ -69,7 +76,7 @@ class NgramScanner(ConfigLoader):
 
         # 转换为最终的字典格式
         result_dict = []
-        for term, data in self.neighbour_dict.items():
+        for term, data in self.neighbours_dict.items():
             left_chars = [{'char': char, 'freq': freq} for char, freq in data['left_chars'].items()]
             right_chars = [{'char': char, 'freq': freq} for char, freq in data['right_chars'].items()]
             result_dict.append({
@@ -84,11 +91,11 @@ class NgramScanner(ConfigLoader):
 
 
 if __name__ == '__main__':
-    ngram_scanner = NgramScanner()
+    neighbour_scanner = NeighbourScanner()
 
-    result = ngram_scanner.scan_to_dict()
+    result = neighbour_scanner.scan_to_dict()
     print(len(result))
-    pickle.dump(result, open('./output/neighbour_dict.pkl', 'wb'))
+    pickle.dump(result, open('output/neighbours_dict.pkl', 'wb'))
 
-    # neighbour_dict = pickle.load(open('./output/neighbour_dict.pkl', 'rb'))
+    # neighbour_dict = pickle.load(open('./output/neighbours_dict.pkl', 'rb'))
     # print(neighbour_dict[10:20])

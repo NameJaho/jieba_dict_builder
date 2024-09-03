@@ -81,4 +81,4 @@ if __name__ == '__main__':
     text = '今天天气真好 明天也不错'
 
     result = ngram_scanner.scan_to_dict()
-    pickle.dump(result, open('../neighbour_dict.pkl', 'wb'))
+    pickle.dump(result, open('../neighbours_dict.pkl', 'wb'))

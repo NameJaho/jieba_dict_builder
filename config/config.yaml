@@ -8,21 +8,19 @@ WORD_LENGTH:
 
 FILTER:
   doc_freq_threshold: 20
-  entropy_threshold: 2
+  entropy_threshold: 1.8
   mi_threshold: -2.5
   bad_words: ['是', '我', '的', '了', '非常', '而且', '很', '最', '们', '还', '和', '让', '您', '就', '或', '并', '怎', '呀',
               '这','有','再','在','又','呢','也','不','可以','没','多','一','个','你','到','出','来','能','要','每','该','说',
               '等','块','会','听','去','太','与','给','更']
 
 OUTPUT_FILE_PATH:
-  char_freq: './output/char_freq.csv'
-  word_freq: './output/word_freq.csv'
-  scan_result: './output/scan_result.csv'
-  ngrams: './output/ngrams.csv'
-  merged_ngrams: './output/merged_ngrams.csv'
+  ngrams_dict: './output/ngrams_dict.pkl'
+  neighbours_dict: './output/neighbours_dict.plk'
   entropy_result: './output/entropy_result.csv'
+  char_freq: './output/char_freq.csv'
   mi_result: './output/mi_result.csv'
-  final_result: './output/final_result.csv'
+
 
 INPUT_FILE_PATH:
   input_file: './input/random_user_20W_0829.csv'
