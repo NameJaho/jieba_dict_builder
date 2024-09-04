@@ -60,6 +60,20 @@ class EntropyCalculator(ConfigLoader):
             return True
         return False
 
+    def contains_ignore_word(self, term):
+        for ignore_word in self.filter.ignore_words:
+            ignore_rule = 'end' if ignore_word.endswith('|') else 'start'
+            if ignore_word in term:
+                if ignore_rule == 'end':
+                    if term.endswith(ignore_word):
+                        return True
+
+                elif ignore_rule == 'start':
+                    if term.startswith(ignore_word):
+                        return True
+
+        return False
+
     @cost_time
     def filter_by_entropy(self, data):
         results = []
@@ -72,6 +86,9 @@ class EntropyCalculator(ConfigLoader):
             right_chars = item['right_chars']
 
             if self.contains_bad_word(term):
+                continue
+
+            if self.contains_ignore_word(term):
                 continue
 
             entropy, left_entropy, right_entropy = self.calculate_entropy(left_chars, right_chars)
