@@ -105,5 +105,5 @@ if __name__ == '__main__':
     print(len(result))
     pickle.dump(result, open('output/neighbours_dict.pkl', 'wb'))
 
-    neighbour_dict = pickle.load(open('./openutput/neighbours_dict.pkl', 'rb'))
+    neighbour_dict = pickle.load(open('./output/neighbours_dict.pkl', 'rb'))
     print(neighbour_dict[10:20])
