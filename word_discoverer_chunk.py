@@ -28,7 +28,7 @@ class WordDiscoverer(ConfigLoader):
 
         # chunks = pd.read_csv(self.input_file_path.input_file, chunksize=chunksize)
         for index, chunk in enumerate(chunks):
-            chunk.dropna(subset=['content'],inplace=True)
+            chunk.dropna(subset=['content'], inplace=True)
             start_time = time.time()
             chunk.rename(columns={'note_id': 'doc_id'}, inplace=True)
             logger.info(f"rename chunk index 〖{index}〗 time taken: {time.time()- start_time} seconds")
@@ -46,7 +46,7 @@ class WordDiscoverer(ConfigLoader):
 
             # Step 2: processing left chars and right chars
             logger.info('Scanning neighbours...')
-            neighbours_dict = self.neighbour_scanner.scan_to_dict(ngrams_dict)
+            neighbours_dict = self.neighbour_scanner.scan_to_dict(ngrams_dict,chunk=True, df=chunk)
             logger.info(f'neighbour_scanner.scan_to_dict chunk index 〖{index}〗 time taken: {time.time()- end_time} seconds')
             logger.info(f'Generated {len(neighbours_dict)} neighbours...')
             neighbours_dict.save_pkl(neighbours_dict, self.output_file_path.neighbours_dict.replace('.pkl', f'_{index}.pkl'))

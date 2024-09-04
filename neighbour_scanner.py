@@ -78,7 +78,7 @@ class NeighbourScanner(ConfigLoader):
 
         # 转换为最终的字典格式
         result_dict = []
-
+        print('thread done')
         for term, data in self.neighbours_dict.items():
             left_chars = [{'char': char, 'freq': freq} for char, freq in data['left_chars'].items()]
             right_chars = [{'char': char, 'freq': freq} for char, freq in data['right_chars'].items()]
@@ -105,5 +105,5 @@ if __name__ == '__main__':
     print(len(result))
     pickle.dump(result, open('output/neighbours_dict.pkl', 'wb'))
 
-    neighbour_dict = pickle.load(open('./output/neighbours_dict.pkl', 'rb'))
-    print(neighbour_dict[10:20])
+    # neighbour_dict = pickle.load(open('./output/neighbours_dict.pkl', 'rb'))
+    # print(neighbour_dict[10:20])
