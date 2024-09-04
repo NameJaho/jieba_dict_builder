@@ -24,7 +24,7 @@ class WordDiscoverer(ConfigLoader):
 
     @cost_time
     def process(self):
-        chunksize = 15 ** 6  # 每次读取100万行
+        chunksize = 10 ** 6  # 每次读取100万行
         chunks = pd.read_csv('xhs_3000w.csv', chunksize=chunksize)
 
         # chunks = pd.read_csv(self.input_file_path.input_file, chunksize=chunksize)
