@@ -24,7 +24,7 @@ class WordDiscoverer(ConfigLoader):
 
     @cost_time
     def process(self):
-        chunksize = 20 ** 6  # 每次读取100万行
+        chunksize = 15 ** 6  # 每次读取100万行
         chunks = pd.read_csv('xhs_3000w.csv', chunksize=chunksize)
 
         # chunks = pd.read_csv(self.input_file_path.input_file, chunksize=chunksize)
@@ -32,6 +32,7 @@ class WordDiscoverer(ConfigLoader):
             self.ngram_scanner.ngram_dict = defaultdict(lambda: {'term_freq': 0, 'doc_freq': 0})
             self.neighbour_scanner.neighbours_dict = defaultdict(
                 lambda: {'term_freq': 0, 'doc_freq': 0, 'left_chars': Counter(), 'right_chars': Counter()})
+
             chunk.dropna(subset=['content'], inplace=True)
             start_time = time.time()
             chunk.rename(columns={'note_id': 'doc_id'}, inplace=True)
@@ -40,11 +41,12 @@ class WordDiscoverer(ConfigLoader):
             # Step 1: processing ngrams
             logger.info('Scanning ngrams...')
             start_time = time.time()
-            ngrams_dict = self.ngram_scanner.scan_to_dict(chunk=True, df=chunk)
+            ngrams_dict,result_ls = self.ngram_scanner.scan_to_dict(chunk=True, df=chunk)
             end_time = time.time()
             logger.info(
                 f"ngram_scanner.scan_to_dict chunk index 〖{index}〗 time taken: {end_time - start_time:.2f} seconds")
             pickle.dump(ngrams_dict, open(self.output_file_path.ngrams_dict.replace('.pkl', f'_{index}.pkl'), 'wb'))
+            pickle.dump(result_ls, open(self.output_file_path.ngrams_dict.replace('.pkl', f'_result_ls_{index}.pkl'), 'wb'))
             logger.info(f"pickle dump ngrams_dict {index} time taken: {time.time() - end_time:.2f} seconds")
             logger.info(f'Generated {len(ngrams_dict)} ngrams...')
             end_time = time.time()

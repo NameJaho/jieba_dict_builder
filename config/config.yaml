@@ -7,7 +7,7 @@ WORD_LENGTH:
   max_len: 5
 
 FILTER:
-  doc_freq_threshold: 20
+  doc_freq_threshold: 5
   entropy_threshold: 0.8
   mi_threshold: -3
   bad_words: ['是', '我', '的', '了', '非常', '而且', '很', '最', '们', '还', '和', '让', '您', '就', '或', '并', '怎', '呀',

@@ -55,13 +55,19 @@ class NgramScanner(ConfigLoader):
 
         # 转换为最终的字典格式
         result_dict = {}
+        result_ls = []
         for term, data in self.ngram_dict.items():
             if data['doc_freq'] > self.filter.doc_freq_threshold:
                 result_dict[term] = {
                     'term_freq': data['term_freq'],
                     'doc_freq': data['doc_freq'],
                 }
-        return result_dict
+            result_ls.append({
+                'term': term,
+                'term_freq': data['term_freq'],
+                'doc_freq': data['doc_freq'],
+            })
+        return result_dict,result_ls
 
 
 if __name__ == '__main__':
