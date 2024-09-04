@@ -57,17 +57,19 @@ class NeighbourScanner(ConfigLoader):
                         self.neighbours_dict[ngram]['right_chars'][right_char] += 1
 
     @cost_time
-    def scan_to_dict(self, ngrams_dict=None):
+    def scan_to_dict(self, ngrams_dict=None, chunk=False, df=None):
         if ngrams_dict is None:
             input_data = pickle.load(open(self.output_file_path.ngrams_dict, 'rb'))
         else:
             input_data = ngrams_dict
 
-        ngrams_list = [ngram for ngram in input_data if ngram['doc_freq'] > self.filter.doc_freq_threshold]
-        self.ngrams_dict = {item['term']: {'term_freq': item['term_freq'], 'doc_freq': item['doc_freq']} for item in
-                            ngrams_list}
+        # ngrams_list = [ngram for ngram in input_data  if ngram['doc_freq'] > self.filter.doc_freq_threshold]
+        # self.ngrams_dict = {item['term']: {'term_freq': item['term_freq'], 'doc_freq': item['doc_freq']} for item in
+        #                     ngrams_list}
 
-        df = pd.read_csv(self.input_file_path.input_file)
+        self.ngrams_dict = input_data
+        if not chunk:
+            df = pd.read_csv(self.input_file_path.input_file)
 
         with ThreadPoolExecutor() as executor:
             futures = [executor.submit(self.process_row, row) for _, row in df.iterrows()]
@@ -89,8 +91,9 @@ class NeighbourScanner(ConfigLoader):
             })
 
         return result_dict
+
     @staticmethod
-    def save_pkl(  data, filename):
+    def save_pkl(data, filename):
         with open(filename, 'wb') as f:
             pickle.dump(data, f)
 
@@ -98,9 +101,9 @@ class NeighbourScanner(ConfigLoader):
 if __name__ == '__main__':
     neighbour_scanner = NeighbourScanner()
 
-    # result = neighbour_scanner.scan_to_dict()
-    # print(len(result))
-    # pickle.dump(result, open('output/neighbours_dict.pkl', 'wb'))
+    result = neighbour_scanner.scan_to_dict()
+    print(len(result))
+    pickle.dump(result, open('output/neighbours_dict.pkl', 'wb'))
 
-    neighbour_dict = pickle.load(open('./output/neighbours_dict.pkl', 'rb'))
+    neighbour_dict = pickle.load(open('./openutput/neighbours_dict.pkl', 'rb'))
     print(neighbour_dict[10:20])

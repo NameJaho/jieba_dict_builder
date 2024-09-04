@@ -11,11 +11,11 @@ class NgramScanner(ConfigLoader):
     def __init__(self):
         super().__init__()
         self.ngram_dict = defaultdict(lambda: {'term_freq': 0, 'doc_freq': 0})
+        self.invalid_chars_pattern = re.compile(r'[^\u4e00-\u9fa5a-zA-Z0-9\s]')
 
-    @staticmethod
-    def remove_invalid_chars(text):
+    def remove_invalid_chars(self, text):
         # 使用正则表达式去除所有非中文字符、非字母、非数字的字符
-        cleaned_text = re.sub(r'[^\u4e00-\u9fa5a-zA-Z0-9\s]', ' ', text)
+        cleaned_text = self.invalid_chars_pattern.sub(' ', text)
         return cleaned_text.strip()
 
     @staticmethod
@@ -56,11 +56,14 @@ class NgramScanner(ConfigLoader):
         # 转换为最终的字典格式
         result_dict = []
         for term, data in self.ngram_dict.items():
-            result_dict.append({
-                'term': term,
-                'term_freq': data['term_freq'],
-                'doc_freq': data['doc_freq'],
-            })
+            if data['doc_freq'] > self.filter.doc_freq_threshold:
+                result_dict.append({
+                    term: {
+                        'term': term,
+                        'term_freq': data['term_freq'],
+                        'doc_freq': data['doc_freq'],
+                    }
+                })
 
         return result_dict
 
@@ -68,13 +71,13 @@ class NgramScanner(ConfigLoader):
 if __name__ == '__main__':
     ngram_scanner = NgramScanner()
 
-    # result = ngram_scanner.scan_to_dict()
-    # print(len(result))
-    # pickle.dump(result, open('./output/ngrams_dict.pkl', 'wb'))
+    result = ngram_scanner.scan_to_dict()
+    print(len(result))
+    pickle.dump(result, open('./output/ngrams_dict.pkl', 'wb'))
 
-    ngrams_dict = pickle.load(open('./output/ngrams_dict.pkl', 'rb'))
-    print(ngrams_dict[10:20])
-
-    for item in ngrams_dict:
-        if item['term'] == '麦卢卡':
-            print(item)
+    # ngrams_dict = pickle.load(open('./output/ngrams_dict.pkl', 'rb'))
+    # print(ngrams_dict[10:20])
+    #
+    # for item in ngrams_dict:
+    #     if item['term'] == '麦卢卡':
+    #         print(item)

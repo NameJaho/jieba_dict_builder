@@ -42,6 +42,7 @@ class WordDiscoverer(ConfigLoader):
             logger.info(f"pickle dump ngrams_dict {index} time taken: {time.time()- end_time} seconds")
             logger.info(f'Generated {len(ngrams_dict)} ngrams...')
             end_time = time.time()
+
             # Step 2: processing left chars and right chars
             logger.info('Scanning neighbours...')
             neighbours_dict = self.neighbour_scanner.scan_to_dict(ngrams_dict)
