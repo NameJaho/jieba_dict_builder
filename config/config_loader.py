@@ -22,6 +22,7 @@ class Filter:
     doc_freq_threshold: int = 0
     entropy_threshold: float = 0.0
     mi_threshold: float = 0.0
+    ignore_words: list = None
 
 
 @dataclass
