@@ -4,6 +4,9 @@ import jieba
 import utils
 import jieba.posseg as pseg
 
+# jieba.enable_parallel()
+jieba.initialize()  # 预加载字典
+
 
 class WordCutter:
     def __init__(self):
@@ -16,15 +19,13 @@ class WordCutter:
 
     @staticmethod
     def pos_seg(text):
-        words = pseg.cut(text)
+        words = pseg.cut(text, HMM=False)
         return [[word, flags] for word, flags in words]
 
 
 if __name__ == '__main__':
     sentences = [
-        """
-        插画｜版画｜考研｜广美｜推荐艺术家;◼️ 朱利安·乔丹诺夫，当代保加利亚版画界的代表艺术家，世界级版画艺术家。1965年生于保加利亚洛维奇，1995年毕业于保加利亚索菲亚国家美术学院，获美术硕士学位。他的版画藏书票作品近年来屡获盛誉，多次入选国际展，并获一等奖、大师荣誉奖等奖项。曾获比利时国际藏书票展凹版技法特别奖，土耳其安卡拉第一届国际藏书票大赛一等奖，第32届北京国际版画藏书票双年展金奖获得者，保加利亚第二届国际藏书票双年展获保加利亚藏书票奖，第一届国际藏书票和小版画双年展提名奖。 ◼️ 朱利安擅长使用铜版和石版技法。作品画面处理巧妙，色调古典雅致，给人强烈的力量感、气场感、现场感，画面极具张力。准确的造型、独特的技法、作品制作的精良是艺术家作品最显著的特征，充分彰显了朱利安完美且精益求精的创作能力、非凡的想象力和创造力。其创作主题多为表现圣经故事、神话故事、世界名著中的故事。朱利安·乔丹诺夫的作品在国际版画藏书票界备受推崇，深受收藏家的青睐。
-        """
+        """开榴莲 15 8一斤 60块的小榴莲 最终开出来924克的肉"""
     ]
     word_cutter = WordCutter()
     for sentence in sentences:
@@ -40,6 +41,6 @@ if __name__ == '__main__':
                                       '给', '才', '与', '吗', '哦', '最', '让', '吧', '太', '更', '最', '至', '啥',
                                       '但', '之', '于', '与', '其', '篇', '多', '哪', '次', '小', '大',
                                       '再', '等', '里', '挺', '被', '吃', '种', '做', '呀'])
-        strip_ = re.sub(r'[^\u4e00-\u9fa5a-zA-Z\s]', ' ', sentence)
+        strip_ = re.sub(r'[^\u4e00-\u9fa5a-z0-9A-Z\s]', ' ', sentence)
         print(strip_)
-        print(word_cutter.pseg(strip_))
+        print(word_cutter.pos_seg(strip_))
