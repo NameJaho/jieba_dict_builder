@@ -33,19 +33,25 @@ class MICalculator(ConfigLoader):
                 total_freq += char_freq
 
         if total_freq == 0 or term_freq == 0:
-            return 0
+            return 0, 0
 
         # 计算概率
         p_term = term_freq / total_freq
         p_chars = {char: freq / total_freq for char, freq in char_freq_dict.items()}
-        #print(p_chars)
+        weight = math.prod([(1 - term_freq / freq) for freq in char_freq_dict.values()])
+        if weight == 0:
+            print(term, term_freq, char_freq_dict)
+            # return 0, 0
         # 计算互信息 判断凝固度
         mi = math.log(p_term / math.prod(p_chars.values()), 2)
-        return mi
+        weighted_mi = math.log(p_term / math.prod(p_chars.values()) / weight, 2)
+        return mi, weighted_mi
 
     @cost_time
     def filter_by_mi(self, df):
-        df['mi'] = df.parallel_apply(lambda row: self.calculate_mutual_information(row['term'], row['term_freq']), axis=1)
+        df[['mi', 'weighted_mi']] = df.parallel_apply(
+            lambda row: self.calculate_mutual_information(row['term'], row['term_freq']),
+            axis=1, result_type='expand')
         return df
 
     def save_to_csv(self, df):
