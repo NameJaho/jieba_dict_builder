@@ -27,6 +27,7 @@ class WordDiscoverer(ConfigLoader):
         chunks = pd.read_csv('xhs_3000w.csv', chunksize=chunksize)
         # chunks = pd.read_csv(self.input_file_path.input_file, chunksize=chunksize)
         for index, chunk in enumerate(chunks):
+            chunk.dropna(subset=['content'],inplace=True)
             start_time = time.time()
             chunk.rename(columns={'note_id': 'doc_id'}, inplace=True)
             logger.info(f"rename chunk index 〖{index}〗 time taken: {time.time()- start_time} seconds")
