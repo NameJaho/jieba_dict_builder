@@ -41,6 +41,7 @@ class MICalculator(ConfigLoader):
         weight = math.prod([(1 - term_freq / freq) for freq in char_freq_dict.values()])
         if weight == 0:
             print(term, term_freq, char_freq_dict)
+            weight = 0.000001
             # return 0, 0
         # 计算互信息 判断凝固度
         mi = math.log(p_term / math.prod(p_chars.values()), 2)

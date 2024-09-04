@@ -73,3 +73,7 @@ if __name__ == '__main__':
 
     ngrams_dict = pickle.load(open('./output/ngrams_dict.pkl', 'rb'))
     print(ngrams_dict[10:20])
+
+    for item in ngrams_dict:
+        if item['term'] == '麦卢卡':
+            print(item)

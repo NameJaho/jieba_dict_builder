@@ -15,7 +15,7 @@ class EntropyCalculator(ConfigLoader):
         if not neighbors:
             return 0
         total_freq = sum(neighbors.values())
-        return -sum((freq / total_freq) * math.log(freq / total_freq) for freq in neighbors.values())
+        return -sum((freq / total_freq) * math.log2(freq / total_freq) for freq in neighbors.values())
 
     def calculate_entropy(self, left_chars, right_chars):
         left_neighbors = defaultdict(int)

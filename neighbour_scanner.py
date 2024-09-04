@@ -93,9 +93,9 @@ class NeighbourScanner(ConfigLoader):
 if __name__ == '__main__':
     neighbour_scanner = NeighbourScanner()
 
-    result = neighbour_scanner.scan_to_dict()
-    print(len(result))
-    pickle.dump(result, open('output/neighbours_dict.pkl', 'wb'))
+    # result = neighbour_scanner.scan_to_dict()
+    # print(len(result))
+    # pickle.dump(result, open('output/neighbours_dict.pkl', 'wb'))
 
-    # neighbour_dict = pickle.load(open('./output/neighbours_dict.pkl', 'rb'))
-    # print(neighbour_dict[10:20])
+    neighbour_dict = pickle.load(open('./output/neighbours_dict.pkl', 'rb'))
+    print(neighbour_dict[10:20])
