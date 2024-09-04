@@ -49,7 +49,7 @@ class WordDiscoverer(ConfigLoader):
             neighbours_dict = self.neighbour_scanner.scan_to_dict(ngrams_dict,chunk=True, df=chunk)
             logger.info(f'neighbour_scanner.scan_to_dict chunk index 〖{index}〗 time taken: {time.time()- end_time} seconds')
             logger.info(f'Generated {len(neighbours_dict)} neighbours...')
-            neighbours_dict.save_pkl(neighbours_dict, self.output_file_path.neighbours_dict.replace('.pkl', f'_{index}.pkl'))
+            self.neighbour_scanner.save_pkl(neighbours_dict, self.output_file_path.neighbours_dict.replace('.pkl', f'_{index}.pkl'))
             logger.info(f"pickle dump neighbours_dict {index} time taken: {time.time()- end_time} seconds")
             #
             # # Step 3: calculate entropy
