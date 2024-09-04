@@ -62,4 +62,5 @@ class KeywordCounter(ConfigLoader):
 
 if __name__ == "__main__":
     counter = KeywordCounter()
+    counter.input_csv = 'xhs_3000w.csv'
     counter.run()
