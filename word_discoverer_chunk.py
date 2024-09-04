@@ -25,10 +25,12 @@ class WordDiscoverer(ConfigLoader):
     @cost_time
     def process(self):
         chunksize = 10 ** 6  # 每次读取100万行
-        chunks = pd.read_csv('xhs_3000w.csv', chunksize=chunksize)
+        # chunks = pd.read_csv('xhs_3000w.csv', chunksize=chunksize)
 
         # chunks = pd.read_csv(self.input_file_path.input_file, chunksize=chunksize)
-        for index, chunk in enumerate(chunks):
+        # for index, chunk in enumerate(chunks):
+        for index in range(15):
+            chunk = pd.read_csv(f'data/xhs_200w_{index}.csv')
             self.ngram_scanner.ngram_dict = defaultdict(lambda: {'term_freq': 0, 'doc_freq': 0})
             self.neighbour_scanner.neighbours_dict = defaultdict(
                 lambda: {'term_freq': 0, 'doc_freq': 0, 'left_chars': Counter(), 'right_chars': Counter()})
