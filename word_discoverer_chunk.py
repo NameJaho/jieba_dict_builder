@@ -31,26 +31,26 @@ class WordDiscoverer(ConfigLoader):
             chunk.dropna(subset=['content'], inplace=True)
             start_time = time.time()
             chunk.rename(columns={'note_id': 'doc_id'}, inplace=True)
-            logger.info(f"rename chunk index 〖{index}〗 time taken: {time.time()- start_time} seconds")
+            logger.info(f"rename chunk index 〖{index}〗 time taken: {time.time()- start_time:.2f} seconds")
 
             # Step 1: processing ngrams
             logger.info('Scanning ngrams...')
             start_time = time.time()
             ngrams_dict = self.ngram_scanner.scan_to_dict(chunk=True, df=chunk)
             end_time = time.time()
-            logger.info(f"ngram_scanner.scan_to_dict chunk index 〖{index}〗 time taken: {end_time- start_time} seconds")
+            logger.info(f"ngram_scanner.scan_to_dict chunk index 〖{index}〗 time taken: {end_time- start_time:.2f} seconds")
             pickle.dump(ngrams_dict, open(self.output_file_path.ngrams_dict.replace('.pkl', f'_{index}.pkl'), 'wb'))
-            logger.info(f"pickle dump ngrams_dict {index} time taken: {time.time()- end_time} seconds")
+            logger.info(f"pickle dump ngrams_dict {index} time taken: {time.time()- end_time:.2f} seconds")
             logger.info(f'Generated {len(ngrams_dict)} ngrams...')
             end_time = time.time()
 
             # Step 2: processing left chars and right chars
             logger.info('Scanning neighbours...')
             neighbours_dict = self.neighbour_scanner.scan_to_dict(ngrams_dict,chunk=True, df=chunk)
-            logger.info(f'neighbour_scanner.scan_to_dict chunk index 〖{index}〗 time taken: {time.time()- end_time} seconds')
+            logger.info(f'neighbour_scanner.scan_to_dict chunk index 〖{index}〗 time taken: {time.time()- end_time:.2f} seconds')
             logger.info(f'Generated {len(neighbours_dict)} neighbours...')
             self.neighbour_scanner.save_pkl(neighbours_dict, self.output_file_path.neighbours_dict.replace('.pkl', f'_{index}.pkl'))
-            logger.info(f"pickle dump neighbours_dict {index} time taken: {time.time()- end_time} seconds")
+            logger.info(f"pickle dump neighbours_dict {index} time taken: {time.time()- end_time:.2f} seconds")
             #
             # # Step 3: calculate entropy
             # logger.info('Calculating entropy...')
