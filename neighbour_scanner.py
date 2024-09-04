@@ -76,6 +76,7 @@ class NeighbourScanner(ConfigLoader):
 
         # 转换为最终的字典格式
         result_dict = []
+
         for term, data in self.neighbours_dict.items():
             left_chars = [{'char': char, 'freq': freq} for char, freq in data['left_chars'].items()]
             right_chars = [{'char': char, 'freq': freq} for char, freq in data['right_chars'].items()]
