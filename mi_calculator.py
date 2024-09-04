@@ -38,14 +38,20 @@ class MICalculator(ConfigLoader):
         # 计算概率
         p_term = term_freq / total_freq
         p_chars = {char: freq / total_freq for char, freq in char_freq_dict.items()}
-        weight = math.prod([(1 - term_freq / freq) for freq in char_freq_dict.values()])
-        if weight == 0:
-            print(term, term_freq, char_freq_dict)
-            weight = 0.000001
+
+        # weight = math.prod([(1 - term_freq / freq) for freq in char_freq_dict.values()])
+        # if weight == 0:
+        #     print(term, term_freq, char_freq_dict)
+        #     weight = 0.000001
             # return 0, 0
         # 计算互信息 判断凝固度
-        mi = math.log(p_term / math.prod(p_chars.values()), 2)
-        weighted_mi = math.log(p_term / math.prod(p_chars.values()) / weight, 2)
+        mi = math.log2(p_term / math.prod(p_chars.values()))
+        # 考虑词权重对mi进行标准化
+        #npmi = mi / (-math.log2(p_term))
+        weighted_mi_1 = mi * math.log2(1 + term_freq)
+        weighted_mi = mi * 10 / math.log2(1 + term_freq)
+
+        #weighted_mi = math.log(p_term / math.prod(p_chars.values()) / weight, 2)
         return mi, weighted_mi
 
     @cost_time
