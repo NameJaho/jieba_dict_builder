@@ -21,27 +21,30 @@ class KeywordCounter(ConfigLoader):
     def initialize_pandarallel(self):
         pandarallel.initialize()
 
+    @cost_time
     def load_data(self):
         self.df = pd.read_csv(self.input_csv)
         target_term = pd.read_csv(self.target_csv)
         target_term.dropna(inplace=True)
         self.keywords = target_term['term'].tolist()
         self.characters = set(''.join([i for i in self.keywords if i != ' ']))
-        self.char_pattern = r'(' + '|'.join(map(re.escape, self.characters)) + r')'
+        self.char_pattern = re.compile(r'(' + '|'.join(map(re.escape, self.characters)) + r')', flags=re.IGNORECASE)
 
-    def count_keywords(self, content, pattern):
-        words_found = re.findall(pattern, content, flags=re.IGNORECASE)
+    def count_keywords(self, content):
+        words_found = self.char_pattern.findall(content)
         return Counter(words_found)
 
     @cost_time
     def parallel_count(self):
-        self.df['char_counts'] = self.df.parallel_apply(lambda x: self.count_keywords(x['content'], self.char_pattern),
+        self.df['char_counts'] = self.df.parallel_apply(lambda x: self.count_keywords(x['content']),
                                                         axis=1)
+
     @cost_time
     def aggregate_counts(self):
         self.total_counter = Counter()
         for row in self.df['char_counts']:
             self.total_counter.update(row)
+
     @cost_time
     def save_results(self):
         result_df_char = pd.DataFrame(list(self.total_counter.items()), columns=['word', 'count'])
