@@ -24,7 +24,7 @@ class NeighbourScanner(ConfigLoader):
     def extract_ngrams(text, n):
         ngrams = []
         for i in range(len(text) - n + 1):
-            ngram = text[i:i+n]
+            ngram = text[i:i + n]
             if len(ngram.replace(' ', '')) == n:
                 ngrams.append((ngram, i))  # 记录ngram及其位置
         return ngrams
@@ -89,6 +89,10 @@ class NeighbourScanner(ConfigLoader):
             })
 
         return result_dict
+    @staticmethod
+    def save_pkl(  data, filename):
+        with open(filename, 'wb') as f:
+            pickle.dump(data, f)
 
 
 if __name__ == '__main__':

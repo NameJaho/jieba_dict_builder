@@ -22,7 +22,7 @@ class NgramScanner(ConfigLoader):
     def extract_ngrams(text, n):
         ngrams = []
         for i in range(len(text) - n + 1):
-            ngram = text[i:i+n]
+            ngram = text[i:i + n]
             if len(ngram.replace(' ', '')) == n:
                 ngrams.append((ngram, i))  # 记录ngram及其位置
         return ngrams
@@ -44,8 +44,9 @@ class NgramScanner(ConfigLoader):
                     self.ngram_dict[ngram]['term_freq'] += 1
 
     @cost_time
-    def scan_to_dict(self):
-        df = pd.read_csv(self.input_file_path.input_file)
+    def scan_to_dict(self, chunk=False, df=None):
+        if not chunk:
+            df = pd.read_csv(self.input_file_path.input_file)
 
         with ThreadPoolExecutor() as executor:
             futures = [executor.submit(self.process_row, row) for _, row in df.iterrows()]
