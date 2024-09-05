@@ -64,10 +64,10 @@ class NeighbourScanner(ConfigLoader):
             input_data = ngrams_dict
 
         # ngrams_list = [ngram for ngram in input_data  if ngram['doc_freq'] > self.filter.doc_freq_threshold]
-        # self.ngrams_dict = {item['term']: {'term_freq': item['term_freq'], 'doc_freq': item['doc_freq']} for item in
-        #                     ngrams_list}
+        self.ngrams_dict = {item['term']: {'term_freq': item['term_freq'], 'doc_freq': item['doc_freq']} for item in
+                            input_data}
 
-        self.ngrams_dict = input_data
+        # self.ngrams_dict = input_data
         if not chunk:
             df = pd.read_csv(self.input_file_path.input_file)
 
@@ -106,4 +106,9 @@ if __name__ == '__main__':
     pickle.dump(result, open('output/neighbours_dict.pkl', 'wb'))
 
     # neighbour_dict = pickle.load(open('./output/neighbours_dict.pkl', 'rb'))
-    # print(neighbour_dict[10:20])
+    # print(len(neighbour_dict))
+    # # print(neighbour_dict[0:10])
+    # _dict = {item['term']: {'term_freq': item['term_freq'], 'doc_freq': item['doc_freq']} for item in neighbour_dict}
+    #
+    # if '蜻蜓点' in _dict:
+    #     print(_dict['蜻蜓点'])

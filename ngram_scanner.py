@@ -28,7 +28,6 @@ class NgramScanner(ConfigLoader):
         return ngrams
 
     def process_row(self, row):
-        doc_id = row['doc_id']
         content = row['content']
         cleaned_content = self.remove_invalid_chars(content)
 

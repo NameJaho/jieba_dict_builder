@@ -107,7 +107,7 @@ class EntropyCalculator(ConfigLoader):
             results.append(result_dict)
         return results
 
-    def save_to_csv(self, results,chunk_index=None):
+    def save_to_csv(self, results, chunk_index=None):
         import pandas as pd
         result_df = pd.DataFrame(results, columns=['term', 'term_freq', 'doc_freq', 'entropy', 'left_entropy', 'right_entropy'])
         entropy_result = self.output_file_path.entropy_result

@@ -17,13 +17,15 @@ class KeywordCounter(ConfigLoader):
         self.target_csv = self.output_file_path.entropy_result
         self.output_csv = self.output_file_path.char_freq
         self.num_partitions = num_partitions
+        self.df = pd.read_csv(self.input_csv)
 
-    def initialize_pandarallel(self):
+    @staticmethod
+    def initialize_pandarallel():
         pandarallel.initialize()
 
     @cost_time
     def load_data(self):
-        self.df = pd.read_csv(self.input_csv)
+        self.df.dropna(inplace=True, subset=['content'])
         target_term = pd.read_csv(self.target_csv)
         target_term.dropna(inplace=True)
         self.keywords = target_term['term'].tolist()
@@ -62,5 +64,5 @@ class KeywordCounter(ConfigLoader):
 
 if __name__ == "__main__":
     counter = KeywordCounter()
-    counter.input_csv = 'xhs_3000w.csv'
+    counter.input_csv = './input/xhs_200w.csv'
     counter.run()
