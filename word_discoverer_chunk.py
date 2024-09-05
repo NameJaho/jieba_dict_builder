@@ -1,4 +1,5 @@
 import time
+from collections import defaultdict, Counter
 
 import pandas as pd
 from utils import cost_time
@@ -23,34 +24,45 @@ class WordDiscoverer(ConfigLoader):
 
     @cost_time
     def process(self):
-        chunksize = 20 ** 6  # 每次读取100万行
-        chunks = pd.read_csv('xhs_3000w.csv', chunksize=chunksize)
+        chunksize = 10 ** 6  # 每次读取100万行
+        # chunks = pd.read_csv('xhs_3000w.csv', chunksize=chunksize)
 
         # chunks = pd.read_csv(self.input_file_path.input_file, chunksize=chunksize)
-        for index, chunk in enumerate(chunks):
-            chunk.dropna(subset=['content'],inplace=True)
+        # for index, chunk in enumerate(chunks):
+        for index in range(1,9):
+            chunk = pd.read_csv(f'data/xhs_200w_{index}.csv')
+            print(f'chunk size is {len(chunk)}')
+            self.ngram_scanner.ngram_dict = defaultdict(lambda: {'term_freq': 0, 'doc_freq': 0})
+            self.neighbour_scanner.neighbours_dict = defaultdict(
+                lambda: {'term_freq': 0, 'doc_freq': 0, 'left_chars': Counter(), 'right_chars': Counter()})
+
+            chunk.dropna(subset=['content'], inplace=True)
             start_time = time.time()
             chunk.rename(columns={'note_id': 'doc_id'}, inplace=True)
-            logger.info(f"rename chunk index 〖{index}〗 time taken: {time.time()- start_time} seconds")
+            logger.info(f"rename chunk index 〖{index}〗 time taken: {time.time() - start_time:.2f} seconds")
 
             # Step 1: processing ngrams
             logger.info('Scanning ngrams...')
             start_time = time.time()
-            ngrams_dict = self.ngram_scanner.scan_to_dict(chunk=True, df=chunk)
+            ngrams_dict,result_ls = self.ngram_scanner.scan_to_dict(chunk=True, df=chunk)
             end_time = time.time()
-            logger.info(f"ngram_scanner.scan_to_dict chunk index 〖{index}〗 time taken: {end_time- start_time} seconds")
+            logger.info(
+                f"ngram_scanner.scan_to_dict chunk index 〖{index}〗 time taken: {end_time - start_time:.2f} seconds")
             pickle.dump(ngrams_dict, open(self.output_file_path.ngrams_dict.replace('.pkl', f'_{index}.pkl'), 'wb'))
-            logger.info(f"pickle dump ngrams_dict {index} time taken: {time.time()- end_time} seconds")
+            pickle.dump(result_ls, open(self.output_file_path.ngrams_dict.replace('.pkl', f'_result_ls_{index}.pkl'), 'wb'))
+            logger.info(f"pickle dump ngrams_dict {index} time taken: {time.time() - end_time:.2f} seconds")
             logger.info(f'Generated {len(ngrams_dict)} ngrams...')
             end_time = time.time()
 
             # Step 2: processing left chars and right chars
             logger.info('Scanning neighbours...')
-            neighbours_dict = self.neighbour_scanner.scan_to_dict(ngrams_dict)
-            logger.info(f'neighbour_scanner.scan_to_dict chunk index 〖{index}〗 time taken: {time.time()- end_time} seconds')
+            neighbours_dict = self.neighbour_scanner.scan_to_dict(ngrams_dict, chunk=True, df=chunk)
+            logger.info(
+                f'neighbour_scanner.scan_to_dict chunk index 〖{index}〗 time taken: {time.time() - end_time:.2f} seconds')
             logger.info(f'Generated {len(neighbours_dict)} neighbours...')
-            neighbours_dict.save_pkl(neighbours_dict, self.output_file_path.neighbours_dict.replace('.pkl', f'_{index}.pkl'))
-            logger.info(f"pickle dump neighbours_dict {index} time taken: {time.time()- end_time} seconds")
+            self.neighbour_scanner.save_pkl(neighbours_dict,
+                                            self.output_file_path.neighbours_dict.replace('.pkl', f'_{index}.pkl'))
+            logger.info(f"pickle dump neighbours_dict {index} time taken: {time.time() - end_time:.2f} seconds")
             #
             # # Step 3: calculate entropy
             # logger.info('Calculating entropy...')
